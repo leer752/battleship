@@ -9,4 +9,4 @@ the enemy's board over a covered tile if an enemy ship is hit.
 
 ship_miss.png = Graphic overlay if a ship was not hit that displays over an uncovered tile. 
 
-gamefont.otf = Font that will be used for any and all text within the program. <a href="https://www.dafont.com/molor.font">"Molor Font"</a> by Mohammad Azmil Bahar. 
+game_font.otf = Font that will be used for any and all text within the program. <a href="https://www.dafont.com/molor.font">"Molor Font"</a> by Mohammad Azmil Bahar. 
