@@ -1,3 +1,7 @@
+Assets folder holds any visual files that will be imported and used in the program.
+
+---
+
 ship_endpiece.png = Graphic portraying the endpiece of a ship that takes up 1 unit. Can be combined with ship midpieces
 and another endpiece to create a ship of any unit-size.
 
