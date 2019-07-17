@@ -9,13 +9,11 @@ screen_height = 800
 screen_height_margin = 100
 screen_width_margin = 50
 
-horizontal_units = 10
-vertical_units = 10
+horizontal_units = int(10)
+vertical_units = int(10)
 
-unit_margin = 10
-unit_size = 25
-
-between_grids = 300
+unit_margin: int(7)
+unit_size = int(25)
 
 fontsize = 30
 game_font = pygame.font.Font("C:\\Users\\bnr752\\PycharmProjects\\battleship\\assets\\molor.otf", fontsize)
@@ -121,8 +119,13 @@ def convert_ship_units():
     pass
 
 
-# Update scores on screen for player & enemy based on units hit, missed, & destroyed
-def draw_scores():
+# Update scores on screen for enemy based on units hit, missed, & destroyed
+def draw_enemy_score():
+    pass
+
+
+# Update scores on screen for player based on units hit, missed, & destroyed
+def draw_player_score():
     pass
 
 
@@ -153,7 +156,7 @@ def change_unit_color():
 
 
 # Display separate small screen that holds player ships; player will drag & drop ships from this screen
-def display_ship_inventory():
+def draw_ship_inventory():
     pass
 
 
@@ -165,15 +168,15 @@ def enemy_turn():
 
 # Main function
 def main():
-    grid_width = (unit_size * unit_size) + (unit_margin * horizontal units) 
+    grid_width = (unit_size * unit_size) + (unit_margin * horizontal_units)
     grid_height = (unit_size * unit_size) + (unit_margin * vertical_units)
-    
+
     running = True
     clock = pygame.time.Clock()
 
-    
+
 # Main menu before game starts that prompts player to either begin or quit; calls the Main function
 def main_menu():
     pass
-  
+
 pygame.quit()
