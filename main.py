@@ -121,8 +121,8 @@ def convert_ship_units():
     pass
 
 
-# Update scores for player & enemy based on units hit, missed, & destroyed
-def update_scores():
+# Update scores on screen for player & enemy based on units hit, missed, & destroyed
+def draw_scores():
     pass
 
 
