@@ -11,6 +11,8 @@ grid_width = 300
 grid_height = 300
 grid_margin = 10
 
+unit_size = 25
+
 fontsize = 30
 game_font = pygame.font.Font("C:\\Users\\bnr752\\PycharmProjects\\battleship\\assets\\molor.otf", fontsize)
 
