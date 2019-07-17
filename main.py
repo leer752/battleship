@@ -6,11 +6,14 @@ pygame.init()
 # Global variables
 screen_width = 800
 screen_height = 800
+
 grid_width = 300
 grid_height = 300
 grid_margin = 10
+
 fontsize = 30
 game_font = pygame.font.Font("C:\\Users\\bnr752\\PycharmProjects\\battleship\\assets\\molor.otf", fontsize)
+
 red = (255, 51, 51)
 blue = (153, 204, 255)
 green = (205, 235, 139)
