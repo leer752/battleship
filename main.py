@@ -80,6 +80,11 @@ def check_lost():
     pass
 
 
+# Check if the player has won the game
+def check_win():
+    pass
+
+
 # Draw the game preparation screen
 # Shows both grids (player & enemy) & ship inventory
 def draw_starting_window():
