@@ -4,14 +4,20 @@ import random
 pygame.init()
 
 # Global variables
-screen_width = 800
+screen_width = 1200
 screen_height = 800
+screen_height_margin = 100
+screen_width_margin = 50
 
-grid_width = 300
-grid_height = 300
-grid_margin = 10
+horizontal_units = 10
+vertical_units = 10
 
+unit_margin = 10
 unit_size = 25
+
+grid_width = (unit_size * unit_size) + (unit_margin * horizontal units) 
+grid_height = (unit_size * unit_size) + (unit_margin * vertical_units)
+between_grids = 300
 
 fontsize = 30
 game_font = pygame.font.Font("C:\\Users\\bnr752\\PycharmProjects\\battleship\\assets\\molor.otf", fontsize)
