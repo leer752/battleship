@@ -54,9 +54,15 @@ def draw_enemy_grid():
     pass
 
 
-# Check that a ship piece is being placed in a valid area on the grid
+# Check that a ship piece is being placed in a valid area on the player grid
 # Piece must not overlap another ship or be placed off the grid
-def valid_space():
+def valid_player_space():
+    pass
+
+
+# Check that a ship piece is being placed in a valid area on the enemy grid
+# Piece must not overlap another ship or be placed off the grid
+def valid_enemy_space():
     pass
 
 
