@@ -15,8 +15,6 @@ vertical_units = 10
 unit_margin = 10
 unit_size = 25
 
-grid_width = (unit_size * unit_size) + (unit_margin * horizontal units) 
-grid_height = (unit_size * unit_size) + (unit_margin * vertical_units)
 between_grids = 300
 
 fontsize = 30
@@ -162,8 +160,13 @@ def enemy_turn():
 
 # Main function
 def main():
+    grid_width = (unit_size * unit_size) + (unit_margin * horizontal units) 
+    grid_height = (unit_size * unit_size) + (unit_margin * vertical_units)
+    
+    running = True
+    clock = pygame.time.Clock()
 
-
+    
 # Main menu before game starts that prompts player to either begin or quit; calls the Main function
 def main_menu():
     pass
