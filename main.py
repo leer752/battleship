@@ -33,13 +33,13 @@ class Ship(object):
         self.rotation = 0
 
 
-# Create the player grid (without drawing it yet) & assign positions to a list array that is 10x10 units
-def create_player_grid():
+# Assign positions to a list array that is 10x10 units
+def create_player_array():
     pass
 
 
-# Create the enemy grid (without drawing it yet) & assign positions to a list array that is 10x10 units
-def create_enemy_grid():
+# Assign positions to a list array that is 10x10 units
+def create_enemy_array():
     pass
 
 
