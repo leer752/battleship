@@ -4,6 +4,8 @@ import random
 pygame.init()
 
 # Global variables
+fps = 60
+
 screen_width = 1200
 screen_height = 800
 screen_height_margin = 100
@@ -30,14 +32,44 @@ screen = pygame.display.set_mode(screen_width, screen_height)
 pygame.display.set_caption("Battleship")
 
 
-# Create a class object that represents a ship as a whole
+# Create a class object that represents a player ship as a whole
 # __init__ function defines the ship's X & Y values, how many units it has, & if it is vertical or horizontal
-class Ship(object):
-    def __init__(self, x, y, units):
+class PlayerShip(object):
+    def __init__(self, x, y, units, rotation):
         self.x = x
         self.y = y
         self.units = units
-        self.rotation = 0
+        self.rotation = rotation
+
+    def get_player_values(self, value):
+        if value == "x":
+            return self.x
+        elif value == "y":
+            return self.y
+        elif value == "units":
+            return self.units
+        else:
+            return self.rotation
+
+
+# Create a class object that represents an enemy ship as a whole
+# __init__ function defines the ship's X & Y values, how many units it has, & if it is vertical or horizontal
+class EnemyShip(object):
+    def __init__(self, x, y, units, rotation):
+        self.x = x
+        self.y = y
+        self.units = units
+        self.rotation = rotation
+
+    def get_enemy_values(self, value):
+        if value == "x":
+            return self.x
+        elif value == "y":
+            return self.y
+        elif value == "units":
+            return self.units
+        else:
+            return self.rotation
 
 
 # Assign positions to a list array that is 10x10 units
@@ -64,12 +96,6 @@ def draw_enemy_grid():
 # Check that a ship piece is being placed in a valid area on the player grid
 # Piece must not overlap another ship or be placed off the grid
 def valid_player_space():
-    pass
-
-
-# Check that a ship piece is being placed in a valid area on the enemy grid
-# Piece must not overlap another ship or be placed off the grid
-def valid_enemy_space():
     pass
 
 
@@ -129,11 +155,18 @@ def draw_player_score():
     pass
 
 
-# Let user click on a ship from the ship inventory & drag it to the player grid
-# If drop position is valid, record positions that the image is dropped on
-def drag_and_drop_ship():
-    pass
-
+# Create ships on the ship inventory for dragging purposes
+# Set initial X & Y for sprites
+def create_ship_sprites():
+    For m in range(1,6):
+        If m == 1:
+            ship_sprite[m] = pygame.rect.Rect(700, 700, (unit_size + unit_margin)*2, unit_size)
+        Elif m == 2 or m == 3:
+            ship_sprite[m] = pygame.rect.Rect(700, 700, (unit_size + unit_margin)*3, unit_size)
+        Elif m == 4:
+            ship_sprite[m] = pygame.rect.Rect(700, 700, (unit_size + unit_margin)*4, unit_size)
+        Else:
+            ship_sprite[m] = pygame.rect.Rect(700, 700, (unit_size + unit_margin)*5, unit_size)
 
 # Add player ship to grid & list array & remove placed ship image
 def add_player_ship():
@@ -174,7 +207,33 @@ def main():
     running = True
     clock = pygame.time.Clock()
 
+    while running:
+        for event in pygame.event.get()
+            if event.type == pygame.QUIT:
+                running = False
 
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    For m in range(1,6)
+                    if ship_sprite[m].collidepoint(event.pos):
+                        sprite_dragging = True
+                        selected_sprite = m
+                        mouse_x, mouse_y = event.pos
+                        offset_x = ship_sprite[m].x - mouse_x
+                        offset_y = ship_sprite[m].y - mouse_x
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if event.button == 1:
+                        sprite_dragging = False
+
+            elif event.type == pygame.MOUSEMOTION:
+                    if sprite_dragging:
+                        mouse_x, mouse_y = event.pos
+                        ship_sprite[selected_sprite].x = mouse_x + offset_x
+                        ship_sprite[selected_sprite].y = mouse_y + offset_y
+
+    pygame.display.flip()
+    clock.tick(fps)
 # Main menu before game starts that prompts player to either begin or quit; calls the Main function
 def main_menu():
     pass
