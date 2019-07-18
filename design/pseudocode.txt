@@ -40,7 +40,6 @@ For row in a range of 10:
 
 ------
 # Draw the enemy grid & display it on the screen for the user
-(Keep in mind that enemy tiles are "covered"; the user cannot see the enemy ships)
 def draw_enemy_grid(enemy_grid):
 
 For row in a range of 10:
@@ -59,51 +58,25 @@ For row in a range of 10:
 
 ------
 # Check that a ship piece is being placed in a valid area on the player grid
-(Piece must not overlap another ship or be placed off the grid)
-def valid_player_space(Ship, grid):
+def valid_player_space(ship_sprite, grid):
 
 Get position of rectangle that is being checked after it is dropped
-(Pygame will return the X & Y values of the top left corner of the rectangle)
+(Pygame will return the X & Y coordinates of the top left corner of the rectangle)
 
-If Ship is horizontal:
-	If X value of Ship is less than screen_width_margin or greater than screen_width_margin + grid_width:
-		return False
-	Else-if:
-		If Y value of Ship is less than screen_height_margin or greater than screen_height_margin + grid_height:
+If ship_sprite.width is greater than ship_sprite.height:
+	Set variable player_units equal to ship_sprite.width divided by ((unit_size + unit_margin) - unit_margin))
+	If ship_sprite.x is less than screen_width_margin or greater than screen_width_margin + grid_width - (player_units * (unit_size + unit_margin)):
+			return False
+	If ship_sprite.y is less than screen_height_margin or greater than screen_height_margin + grid_height:
 			return False
 	Else:
 		return True
-If Ship is vertical:
-	If X value of Ship is less than screen_width_margin or greater than screen_width_margin + grid_width:
+Else:
+	Set variable player_units equal to ship_sprite.height divided by ((unit_size + unit_margin) - unit_margin))
+	If ship_sprite.x is less than screen_width_margin or greater than screen_width_margin + grid_width:
 		return False
-	Else-if:
-		If Y value of Ship is less than screen_height_margin or greater than screen_height_margin + grid_height - (Ship.units * (unit_size + unit_margin)):
-			return False
-	Else:
-		return True
-
-------
-# Check that a ship piece is being placed in a valid area on the enemy grid
-(Piece must not overlap another ship or be placed off the grid)
-def valid_enemy_space(Ship, grid)
-
-Get position of rectangle that is being checked after it is dropped
-(Pygame will return the X & Y values of the top left corner of the rectangle)
-
-If Ship is horizontal:
-	If X value of Ship is less than (screen_width_margin + grid_width + between_grids) or greater than (screen_width_margin + between_grids + (grid_width * 2)):
+	If ship_sprite.y is less than screen_height_margin or greater than screen_height_margin + grid_height - (player_units * (unit_size + unit_margin)):
 		return False
-	Else-if:
-		If Y value of Ship is less than screen_height_margin or greater than screen_height_margin + grid_height:
-			return False
-	Else:
-		return True
-If Ship is vertical:
-	If X value of Ship is less than (screen_width_margin + grid_width + between_grids) or greater than (screen_width_margin + between_grids + (grid_width * 2)):
-		return False
-	Else-if:
-		If Y value of Ship is less than screen_height_margin or greater than screen_height_margin + grid_height - (Ship.units * (unit_size + unit_margin)):
-			return False
 	Else:
 		return True
 
@@ -129,7 +102,7 @@ Else:
 
 ------
 # Draw the game preparation screen
-(Shows both grids (player & enemy) & ship inventory)
+# Shows both grids (player & enemy) & ship inventory
 def draw_starting_window():
 
 Call function draw_player_grid
@@ -140,7 +113,7 @@ Draw enemy grid title
 
 ------
 # Draw the ongoing game screen
-(Shows both grids & scores)
+# Shows both grids & scores
 def draw_playing_window():
 
 Call function draw_player_grid
@@ -152,7 +125,7 @@ Call function draw_enemy_score
 
 ------
 # Draw the victory screen
-(Shows enemy grid & score with victory menu)
+# Shows enemy grid & score with victory menu
 def draw_victory_window():
 
 Call function draw_enemy_grid
@@ -169,7 +142,7 @@ If "Quit" button is pressed:
 
 ------
 # Draw the defeat screen
-(Shows player grid & score with defeat menu)
+# Shows player grid & score with defeat menu
 def draw_defeat_window():
 
 Call function draw_player_grid
@@ -186,137 +159,58 @@ If "Quit" button is pressed:
 
 ------
 # Generate positions for enemy ships & place them on enemy grid
-def get_enemy_positions(Ship, enemy_grid):
+def get_enemy_positions(EnemyShip, enemy_grid):
 
-Generate either 0 or 1 randomly using random.randint(0, 1)
-Assign the result to enemy_ship_1.rotation
-Generate a random number between 1 and (horizontal_units + 1) using random.randint(1, horizontal_units + 1)
-Assign the result to enemy_ship_1.x
-Generate a random number between 1 and (vertical_units + 1) using random.randint(1, vertical_units + 1)
-Assign the result to enemy_ship_1.y
-For n in range(2):
-	If enemy_ship_1.rotation equals 0:
-		enemy_grid[enemy_ship_1.x + n][enemy_ship_1.y] equals 4
-	Else:
-		enemy_grid[enemy_ship_1.x][enemy_ship_1.y + n] equals 4
-
-
-Generate either 0 or 1 randomly using random.randint(0, 1)
-Assign the result to enemy_ship_2.rotation
-Set sentinel value space_taken equal to True
-While space_taken equals True
-	Generate a random number between 1 and (horizontal_units + 1) using random.randint(1, horizontal_units + 1)
-	Assign the result to enemy_ship_2.x
-	Generate a random number between 1 and (vertical_units + 1) using random.randint(1, vertical_units + 1)
-	Assign the result to enemy_ship_2.y
-	Check value in enemy_grid[enemy_ship_2.x][enemy_ship_2.y]
-	Set space_taken equal to False
-	For n in range(3):
-		If space_taken equals False:
-			If enemy_ship_2.rotation equals 0:
-				Check value of enemy_grid[enemy_ship_2.x + n][enemy_ship_2.y]
+For m in range(1,6):
+	Generate either 0 or 1 randomly using random.randint(0, 1)
+	If the result is 0:
+		Set variable enemy_rotation equal to "horizontal"
+	If the result is 1:
+		Set variabale enemy_rotation equal to "vertical"
+	Set sentinel value space_taken equal to True
+	If m equals 1:
+		Set variable enemy_units equal to 2
+	If m equals 2 or 3:
+		Set variable enemy_units equal to 3
+	If m equals 4:
+		Set variable enemy_units equal to 4
+	If m equals 5:
+		Set variable enemy_units equal to 5
+	While space_taken equals True
+		Generate a random number between 1 and (horizontal_units + 1) using random.randint(1, horizontal_units + 1)
+		Assign the result to enemy_x
+		Generate a random number between 1 and (vertical_units + 1) using random.randint(1, vertical_units + 1)
+		Assign the result to enemy_y
+		Set space_taken equal to False
+		For n in range(enemy_units):
+			If enemy_rotation equals "horizontal":
+				If enemy_x + n is greater than 10:
+					Set space_taken equal to True
+				Check value of enemy_grid[enemy_x + n][enemy_y]
 				If value equals 4:
 					Set space_taken equal to True
 			Else:
-				Check value of enemy_grid[enemy_ship_2.x][enemy_ship_2.y + n]
+				If enemy_y + n is greater than 10:
+					Set space_taken equal to True
+				Check value of enemy_grid[enemy_x][enemy_y + n]
 				If value equals 4:
 					Set space_taken equal to True
-For n in range(3):
-	If enemy_ship_2.rotation equals 0:
-		enemy_grid[enemy_ship_2.x + n][enemy_ship_2.y] equals 4
-	Else:
-		enemy_grid[enemy_ship_2.x][enemy_ship_2.y + n] equals 4
+	For n in range(enemy_units):
+		If enemy_rotation equals "horizontal":
+			enemy_grid[enemy_x + n][enemy_y] equals 4
+		Else:
+			enemy_grid[enemy_.x][enemy_y + n] equals 4
+	enemy_ships[m] = EnemyShip(enemy_x,enemy_y,enemy_units,enemy_rotation)
 
-
-Generate either 0 or 1 randomly using random.randint(0, 1)
-Assign the result to enemy_ship_3.rotation
-Set sentinel value space_taken equal to True
-While space_taken equals True
-	Generate a random number between 1 and (horizontal_units + 1) using random.randint(1, horizontal_units + 1)
-	Assign the result to enemy_ship_3.x
-	Generate a random number between 1 and (vertical_units + 1) using random.randint(1, vertical_units + 1)
-	Assign the result to enemy_ship_3.y
-	Check value in enemy_grid[enemy_ship_3.x][enemy_ship_3.y]
-	Set space_taken equal to False
-	For n in range(3):
-		If space_taken equals False:
-			If enemy_ship_3.rotation equals 0:
-				Check value of enemy_grid[enemy_ship_3.x + n][enemy_ship_3.y]
-				If value equals 4:
-					Set space_taken equal to True
-			Else:
-				Check value of enemy_grid[enemy_ship_3.x][enemy_ship_3.y + n]
-				If value equals 4:
-					Set space_taken equal to True
-For n in range(3):
-	If enemy_ship_3.rotation equals 0:
-		enemy_grid[enemy_ship_3.x + n][enemy_ship_3.y] equals 4
-	Else:
-		enemy_grid[enemy_ship_3.x][enemy_ship_3.y + n] equals 4
-
-
-Generate either 0 or 1 randomly using random.randint(0, 1)
-Assign the result to enemy_ship_4.rotation
-Set sentinel value space_taken equal to True
-While space_taken equals True
-	Generate a random number between 1 and (horizontal_units + 1) using random.randint(1, horizontal_units + 1)
-	Assign the result to enemy_ship_4.x
-	Generate a random number between 1 and (vertical_units + 1) using random.randint(1, vertical_units + 1)
-	Assign the result to enemy_ship_4.y
-	Check value in enemy_grid[enemy_ship_4.x][enemy_ship_4.y]
-	Set space_taken equal to False
-	For n in range(4):
-		If space_taken equals False:
-			If enemy_ship_4.rotation equals 0:
-				Check value of enemy_grid[enemy_ship_4.x + n][enemy_ship_4.y]
-				If value equals 4:
-					Set space_taken equal to True
-			Else:
-				Check value of enemy_grid[enemy_ship_4.x][enemy_ship_4.y + n]
-				If value equals 4:
-					Set space_taken equal to True
-For n in range(4):
-	If enemy_ship_4.rotation equals 0:
-		enemy_grid[enemy_ship_4.x + n][enemy_ship_4.y] equals 4
-	Else:
-		enemy_grid[enemy_ship_4.x][enemy_ship_4.y + n] equals 4
-
-
-Generate either 0 or 1 randomly using random.randint(0, 1)
-Assign the result to enemy_ship_5.rotation
-Set sentinel value space_taken equal to True
-While space_taken equals True
-	Generate a random number between 1 and (horizontal_units + 1) using random.randint(1, horizontal_units + 1)
-	Assign the result to enemy_ship_5.x
-	Generate a random number between 1 and (vertical_units + 1) using random.randint(1, vertical_units + 1)
-	Assign the result to enemy_ship_5.y
-	Check value in enemy_grid[enemy_ship_5.x][enemy_ship_5.y]
-	Set space_taken equal to False
-	For n in range(5):
-		If space_taken equals False:
-			If enemy_ship_5.rotation equals 0:
-				Check value of enemy_grid[enemy_ship_5.x + n][enemy_ship_5.y]
-				If value equals 4:
-					Set space_taken equal to True
-			Else:
-				Check value of enemy_grid[enemy_ship_5.x][enemy_ship_5.y + n]
-				If value equals 4:
-					Set space_taken equal to True
-For n in range(5):
-	If enemy_ship_5.rotation equals 0:
-		enemy_grid[enemy_ship_5.x + n][enemy_ship_5.y] equals 4
-	Else:
-		enemy_grid[enemy_ship_5.x][enemy_ship_5.y + n] equals 4
 
 ------
 # Convert dropped ship to X & Y units for the player grid list array
-(i.e. if a 3-unit player ship is dropped in the top-left corner horizontally, this function should translate the sprite into array positions (1,1), (2,1), & (3,1))
+# i.e. if a 3-unit player ship is dropped in the top-left corner horizontally,
+# this function should translate the sprite into array positions (1,1), (2,1), & (3,1)
 def convert_ship_units(Ship, player_grid):
-    
-    WIP
-    
+
 ------
-# Update scores on screen for player & enemy based on units hit, missed, & destroyed
+# Update scores on screen for player based on units hit, missed, & destroyed
 def draw_player_score(player_grid):
 
 Set player_hit equal to 0
@@ -331,13 +225,18 @@ For row in a range of 10:
 		Set player_hit equal to player_missed plus 1
 	Else-if player_grid[row][column] equals 3:
 		Set player_destroyed equal to player_destroyed plus 1
-		If unit belongs to 2-unit ship:
+		For m in range(1,6):
+			Set player_x equal to player_ships[m].get_player_values("x")
+			Set player_y equal to player_ships[m].get_player_values("y")
+			If row equals player_x and column equals player_y:
+				Set player_units equal to player_ships[m].get_player_values("units")
+		If player_units equals 2:
 			Append "2" to player_destroyed_ships list
-		Else-If unit belongs to 3-unit ship:
+		Else-If player_units equals 3:
 			Append "3" to player_destroyed_ships list
-		Else-If unit belongs to 4-unit ship:
+		Else-If player_units equals 4:
 			Append "4" to player_destroyed_ships list
-		Else-If unit belongs to 5-unit ship:
+		Else:
 			Append "5" to player_destroyed_ships list
 If player_destroyed does not equal 0:
 	Convert player_destroyed_ships into a dictionary
@@ -365,13 +264,18 @@ For row in a range of 10:
 		Set enemy_hit equal to enemy_missed plus 1
 	Else-if enemy_grid[row][column] equals 3:
 		Set enemy_destroyed equal to enemy_destroyed plus 1
-		If unit belongs to 2-unit ship:
+		For m in range(1,6):
+			Set enemy_x equal to enemy_ships[m].get_enemy_values("x")
+			Set enemy_y equal to enemy_ships[m].get_enemy_values("y")
+			If row equals enemy_x and column equals enemy_y:
+				Set enemy_units equal to enemy_ships[m].get_enemy_values("units")
+		If enemy_units equals 2:
 			Append "2" to enemy_destroyed_ships list
-		Else-If unit belongs to 3-unit ship:
+		Else-If enemy_units equals 3:
 			Append "3" to enemy_destroyed_ships list
-		Else-If unit belongs to 4-unit ship:
+		Else-If enemy_units equals 4:
 			Append "4" to enemy_destroyed_ships list
-		Else-If unit belongs to 5-unit ship:
+		Else:
 			Append "5" to enemy_destroyed_ships list
 If enemy_destroyed does not equal 0:
 	Convert enemy_destroyed_ships into a dictionary
@@ -384,60 +288,100 @@ Blit text to screen
 Display updated scores to screen
 
 ------
-# Let user click on a ship from the ship inventory & drag it to the player grid
-(If drop position is valid, record positions that the image is dropped on)
-def drag_and_drop_ship():
+# Create ships that will be used for the ship inventory
+# Set initial X & Y for sprites
+def create_ship_sprites():
     
-    WIP
+For m in range(1,6):
+	If m equals 1:
+		Set ship_sprite[m] equal to a rectangle for a 2-unit ship horizontally
+		width -> (unit_size * 2) + unit_margin
+	If m equals 2 or 3:
+		Set ship_sprite[m] equal to a rectangle for a 3-unit ship horizontally
+		width -> (unit_size * 3) + (unit_margin * 2)
+	If m equals 4:
+		Set ship_sprite[m] equal to a rectangle for a 4-unit ship horizontally
+		width -> (unit_size * 4) + (unit_margin * 3)
+	Else:
+		Set ship_sprite[m] equal to a rectangle for a 5-unit ship horizontally
+		width -> (unit_size * 5) + (unit_margin * 4)
+
+(Place ship image over rectangle; ensure that there are 5 images with the proper dimensions)
+(Sprites should start at Y coordinate of 700 and varying X coordinates with gaps of 100; adjust as needed)
 
 ------
 # Add player ship to grid & list array & remove placed ship image
 def add_player_ship():
     
-    WIP
+Get rectangle coordinates & convert those coordinates to a position on the grid
+Set grid position equal to 4 (occupied)
+Change additional grid positions according to how many units long the rectangle was 
+(horizontal -> units = width / ((unit_size + unit_margin) - unit_margin))
+(vertical -> units = height / ((unit_size + unit_margin) - unit_margin))
+Call draw_player_grid function to overwrite rectangle on grid & "erase" it
 
 ------
 # Check if enemy hit a player unit & change the player tile
-def check_player_hit():
-    
-    WIP
+def check_player_hit(x, y):
+
+If player_grid[x][y] equals 4:
+	Set player_grid[x][y] equal to 1
+	return True
+Else:	
+	Set player_grid[x][y] equal to 2
+	return False
 
 ------
 # Check if player hit an enemy unit & uncover that enemy tile
 def check_enemy_hit():
-    
-    WIP
 
-------
-# Change grid unit color based on hit (orange), missed (blue), or destroyed (red)
-def change_unit_color():
-    
-    WIP
+Get guess_x and guess_y values
+If enemy_grid[guess_x][guess_y] equals 4:
+	If player ship not destroyed:
+		Set enemy_grid[guess_x][guess_y] equal to 1
+	If player ship destroyed:
+		Set enemy_grid[guess_x][guess_y] equal to 3
+		Get values from ship hit
+		Change all player_grid values to 3 if with that ship
+		(i.e. if ship is at (2,3), is 3 units, and is vertical, then we know that the spaces occupied are (2,3),(2,4),(2,5))
+	return True
+Else:	
+	Set enemy_grid[guess_x][guess_y] equal to 2
+	return False
 
 ------
 # Display separate small screen that holds player ships; player will drag & drop ships from this screen
 def draw_ship_inventory():
-    
-    WIP
+
+Draw rectangle at the bottom of the screen that will hold the ships
+Add title text that says "Ships" above the rectangle
+Add smaller text that says "(drag & place on player grid)" 
+Add smaller text that says "(R) rotate"
+(Add functionality into main event log that checks for R button pressed)
+For m in range(1,6):
+	Draw ship_sprite[m]
+
 
 ------
 # Generate random guess for enemy on player grid
-(Check if unit hit but not destroyed; if so, change enemy guess to check around hit piece)
+# Check if unit hit but not destroyed; if so, change enemy guess to check around hit piece
 def enemy_turn():
-    
-    WIP
+
+DIAGRAM -> look for enemy_turn_diagram.png in design folder
 
 ------
 # Main function
 def main():
-    Set sentinel value running equal to True
-    Set variable clock equal to pygame.time.Clock()
-    
-    WIP
-    
+   
+Set sentinel value running equal to True
+Set variable clock equal to pygame.time.Clock()
+Create dictionary named enemy_ships = {}
+Create dictionary named player_ships = {}
+
+WIP
 
 ------
 # Main menu before game starts that prompts player to either begin or quit; calls the Main function
 def main_menu():
-    
-    WIP
+
+WIP
