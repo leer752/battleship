@@ -33,7 +33,6 @@ pygame.display.set_caption("Battleship")
 
 
 # Create a class object that represents a player ship as a whole
-# __init__ function defines the ship's X & Y values, how many units it has, & if it is vertical or horizontal
 class PlayerShip(object):
     def __init__(self, x, y, units, rotation):
         self.x = x
@@ -42,6 +41,26 @@ class PlayerShip(object):
         self.rotation = rotation
 
     def get_player_values(self, value):
+        if value == "x":
+            return self.x
+        elif value == "y":
+            return self.y
+        elif value == "units":
+            return self.units
+        else:
+            return self.rotation
+
+
+# Create a class object that represents an enemy ship as a whole
+# __init__ function defines the ship's X & Y values, how many units it has, & if it is vertical or horizontal
+class EnemyShip(object):
+    def __init__(self, x, y, units, rotation):
+        self.x = x
+        self.y = y
+        self.units = units
+        self.rotation = rotation
+
+    def get_enemy_values(self, value):
         if value == "x":
             return self.x
         elif value == "y":
