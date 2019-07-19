@@ -64,7 +64,8 @@ def create_enemy_array():
 
 # Draw the player grid & display it on the screen for the user
 def draw_player_grid():
-    pass
+    grid_width = (unit_size * unit_size) + (unit_margin * horizontal_units)
+    grid_height = (unit_size * unit_size) + (unit_margin * vertical_units)
 
 
 # Draw the enemy grid & display it on the screen for the user
@@ -138,15 +139,8 @@ def draw_player_score():
 # Create ships on the ship inventory for dragging purposes
 # Set initial X & Y for sprites
 def create_ship_sprites():
-    For m in range(1,6):
-        If m == 1:
-            ship_sprite[m] = pygame.rect.Rect(700, 700, (unit_size + unit_margin)*2, unit_size)
-        Elif m == 2 or m == 3:
-            ship_sprite[m] = pygame.rect.Rect(700, 700, (unit_size + unit_margin)*3, unit_size)
-        Elif m == 4:
-            ship_sprite[m] = pygame.rect.Rect(700, 700, (unit_size + unit_margin)*4, unit_size)
-        Else:
-            ship_sprite[m] = pygame.rect.Rect(700, 700, (unit_size + unit_margin)*5, unit_size)
+    pass
+
 
 # Add player ship to grid & list array & remove placed ship image
 def add_player_ship():
@@ -181,8 +175,6 @@ def enemy_turn():
 
 # Main function
 def main():
-    grid_width = (unit_size * unit_size) + (unit_margin * horizontal_units)
-    grid_height = (unit_size * unit_size) + (unit_margin * vertical_units)
 
     running = True
     clock = pygame.time.Clock()
@@ -192,25 +184,6 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
 
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    For m in range(1,6)
-                    if ship_sprite[m].collidepoint(event.pos):
-                        sprite_dragging = True
-                        selected_sprite = m
-                        mouse_x, mouse_y = event.pos
-                        offset_x = ship_sprite[m].x - mouse_x
-                        offset_y = ship_sprite[m].y - mouse_x
-
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if event.button == 1:
-                        sprite_dragging = False
-
-            elif event.type == pygame.MOUSEMOTION:
-                    if sprite_dragging:
-                        mouse_x, mouse_y = event.pos
-                        ship_sprite[selected_sprite].x = mouse_x + offset_x
-                        ship_sprite[selected_sprite].y = mouse_y + offset_y
 
     pygame.display.flip()
     clock.tick(fps)
