@@ -135,10 +135,9 @@ Render text to the left of the enemy grid that states "You won!"
 Blit that text to the screen
 Add two buttons underneath the text; one states "Play again" and the other states "Quit"
 If "Play again" button is pressed:
-	Clear & re-initialize all variables by calling main() again
+	Return True
 If "Quit" button is pressed:
-	Set the sentinel running value equal to False
-	Enter command to shut-down program
+	Return False
 
 ------
 # Draw the defeat screen
@@ -152,10 +151,9 @@ Render text to the right of the player grid that states "You lost!"
 Blit that text to the screen
 Add two buttons underneath the text; one states "Play again" and the other states "Quit"
 If "Play again" button is pressed:
-	Clear & re-initialize all variables by calling main() again
+	Return True
 If "Quit" button is pressed:
-	Set the sentinel running value equal to False
-	Enter command to shut-down program
+	Return False
 
 ------
 # Generate positions for enemy ships & place them on enemy grid
@@ -201,13 +199,6 @@ For m in range(1,6):
 		Else:
 			enemy_grid[enemy_.x][enemy_y + n] equals 4
 	enemy_ships[m] = EnemyShip(enemy_x,enemy_y,enemy_units,enemy_rotation)
-
-
-------
-# Convert dropped ship to X & Y units for the player grid list array
-# i.e. if a 3-unit player ship is dropped in the top-left corner horizontally,
-# this function should translate the sprite into array positions (1,1), (2,1), & (3,1)
-def convert_ship_units(Ship, player_grid):
 
 ------
 # Update scores on screen for player based on units hit, missed, & destroyed
@@ -311,14 +302,15 @@ For m in range(1,6):
 
 ------
 # Add player ship to grid & list array & remove placed ship image
-def add_player_ship():
+def add_player_ship(ships_placed):
     
-Get rectangle coordinates & convert those coordinates to a position on the grid
+Get selected_ship coordinates & convert those coordinates to a position on the grid
 Set grid position equal to 4 (occupied)
 Change additional grid positions according to how many units long the rectangle was 
 (horizontal -> units = width / ((unit_size + unit_margin) - unit_margin))
 (vertical -> units = height / ((unit_size + unit_margin) - unit_margin))
 Call draw_player_grid function to overwrite rectangle on grid & "erase" it
+Add 1 to ships_placed
 
 ------
 # Check if enemy hit a player unit & change the player tile
@@ -344,10 +336,9 @@ If enemy_grid[guess_x][guess_y] equals 4:
 		Get values from ship hit
 		Change all player_grid values to 3 if with that ship
 		(i.e. if ship is at (2,3), is 3 units, and is vertical, then we know that the spaces occupied are (2,3),(2,4),(2,5))
-	return True
 Else:	
 	Set enemy_grid[guess_x][guess_y] equal to 2
-	return False
+
 
 ------
 # Display separate small screen that holds player ships; player will drag & drop ships from this screen
@@ -370,18 +361,122 @@ def enemy_turn():
 DIAGRAM -> look for enemy_turn_diagram.png in design folder
 
 ------
+# Go through steps for player turn
+def player_turn():
+
+Set player_guess equal to True
+While player_guess:
+	Check for mouse events or game quit
+	If left mouse button is pressed:
+		Get coordinates of mouse 
+		If mouse coordinates are on enemy grid:
+			Convert mouse coordinates to position on enemy array
+			Assign this position to guess_x and guess_y
+			Send guess_x and guess_y to check_enemy_hit()
+			Update display
+			Set player_guess equal to False
+
+------
+# Go through steps for setting up the game
+def pre_game():
+
+Set prepping equal to True
+Set ships_placed equal to 0
+While prepping:
+	Check for mouse events or game quit
+	If left mouse button is pressed:
+		Check to see which rectangle collided with mouse click
+		Set this rectangle equal to selected_ship
+	If mouse is in motion (and mouse button is still pressed):
+		Move selected_ship according to mouse's x & y positions
+		(Use PyGame's pygame.mouse.get_pos() to grab mouse coordinates & assign them to mouse_pos variable)
+	If left mouse button is lifted:
+		Set variable is_valid equal to function call valid_player_space()
+		If is_valid equals False:
+			Return rectangle to original postition	
+		Else-if is_valid equals True:
+			Call function add_player_ship() using final coordinates of mouse button
+			Set ships_placed equal to return value from add_player_ship()
+	If ships_placed equals 5:
+		Set prepping equal to False
+Return prepping value
+	
+
+------
 # Main function
 def main():
    
 Set sentinel value running equal to True
+Set value prepping equal to True
+Set player_won equal to False
+Set player_lost equal to False
 Set variable clock equal to pygame.time.Clock()
 Create dictionary named enemy_ships = {}
 Create dictionary named player_ships = {}
-
-WIP
+While running:
+	Check for in-game events (specifically whether or not the game is quit)
+	If prepping:
+		Call function draw_starting_window()
+		Call function pre_game()
+		Call function get_enemy_positions()
+		Set prepping equal to False
+	Call function draw_playing_window()
+	Call function player_turn()
+	Call function check_win() & set return value equal to player_won
+	Call function check_lost() & set return value equal to player_lost
+	If player_won:
+		Call function draw_victory_window() & set return value equal to play_again
+		If play_again:
+			Call main()
+		Else:
+			Set running equal to False
+	If player_lost:
+		Call function draw_defeat_window() & set return value equal to play_again
+		If play_again:
+			Call main()
+		Else:
+			Set running equal to False
+	Call function enemy_turn()
+	Call function check_win() & set return value equal to player_won
+	Call function check_lost() & set return value equal to player_lost
+	If player_won:
+		Call function draw_victory_window() & set return value equal to play_again
+		If play_again:
+			Call main()
+		Else:
+			Set running equal to False
+	If player_lost:
+		Call function draw_defeat_window() & set return value equal to play_again
+		If play_again:
+			Call main()
+		Else:
+			Set running equal to False
+	
+Update display
+Make sure clock.tick is associated with assigned FPS (should be 60)
 
 ------
 # Main menu before game starts that prompts player to either begin or quit; calls the Main function
 def main_menu():
 
-WIP
+Set in_menu equal to True
+
+While in_menu:
+	Fill screen with blue
+	Draw white title text
+	Draw two blue rectangles with a white outline
+	Draw white text that each goes into a rectangle saying "start" and "quit" (and is italicized)
+	Attempt to set ship_logo equal to its image
+		If image does not exist:
+			Load image & set value
+		If image does exist:
+			Set value
+	Render graphics
+	Update display
+	Check for mouse events or game quit
+	If left mouse button is pressed:
+		Check to see which rectangle (start or quit) collided with mouse click
+		If mouse click collided with "start" rectangle:
+			Call main()
+		If mouse click collided with "quit":
+			Quit game 
