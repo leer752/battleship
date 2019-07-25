@@ -1,5 +1,6 @@
 import pygame
 import random
+import time
 
 pygame.init()
 
@@ -122,6 +123,7 @@ def valid_player_space(checking_ship, ship_number, placed_ships, player_grid, en
             if pygame.Rect.colliderect(checking_ship, player_grid[row][column].rectangle):
                 player_grid[row][column].color = green
                 player_grid[row][column].number = str(ship_number)
+                player_grid[row][column].status = "full"
                 draw_starting_window(placed_ships, player_grid, enemy_grid, orientation)
 
     return True, player_grid
@@ -149,7 +151,7 @@ def check_end_game(player_grid, enemy_grid):
     if not_destroyed == 0:
         return "victory"
 
-    return False
+    return "ongoing"
 
 
 # Draw the game preparation screen
@@ -252,9 +254,6 @@ def draw_player_score():
 def check_player_hit(player_grid, guess_x, guess_y):
     selected_unit = player_grid[guess_x][guess_y]
 
-    if selected_unit.status == "hit" or selected_unit.status == "miss" or selected_unit.status == "destroyed":
-        return "invalid", player_grid
-
     if selected_unit.status == "empty":
         selected_unit.status = "miss"
         selected_unit.color = blue
@@ -302,10 +301,10 @@ def check_enemy_hit(event_pos, enemy_grid):
                 selected_unit = enemy_grid[row][column]
 
     if not valid_space:
-        return False, enemy_grid
+        return True, enemy_grid
 
     if selected_unit.status == "hit" or selected_unit.status == "miss" or selected_unit.status == "destroyed":
-        return False, enemy_grid
+        return True, enemy_grid
 
     if selected_unit.status == "empty":
         selected_unit.status = "miss"
@@ -339,7 +338,10 @@ def check_enemy_hit(event_pos, enemy_grid):
             selected_unit.status = "hit"
             selected_unit.color = orange
 
-    return True, enemy_grid
+    else:
+        return True, enemy_grid
+
+    return False, enemy_grid
 
 
 # Display separate small screen that holds player ships; player will drag & drop ships from this screen
@@ -457,41 +459,219 @@ def pre_game():
 
 # Generate random guess for enemy on player grid
 # Check if unit hit but not destroyed; if so, change enemy guess to check around hit piece
-def enemy_turn(player_grid, enemy_grid):
-    try:
-        turn_number
-    except NameError:
-        turn_number = 1
-    else:
-        pass
-
-    if turn_number == 1:
-        blind_guess = True
-        first_x = 0
-        first_y = 0
-        previous_x = 0
-        previous_y = 0
-        orientation = None
-        direction = None
+def enemy_turn(player_grid, enemy_grid, blind_guess, first_x, first_y, previous_x, previous_y, orientation, direction, guess_list):
+    time.sleep(1)
+    random.seed()
 
     if blind_guess:
-        guess_x = random.randrange(horizontal_units)
-        guess_y = random.randrange(vertical_units)
-        success, player_grid = check_player_hit(guess_x, guess_y, player_grid)
-        while success == "invalid":
+        already_guessed = True
+        while already_guessed:
             guess_x = random.randrange(horizontal_units)
             guess_y = random.randrange(vertical_units)
+            if (guess_x, guess_y) not in guess_list:
+                already_guessed = False
+        guess_list.append((guess_x, guess_y))
+        success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
         if success:
             first_x = guess_x
             first_y = guess_y
             previous_x = guess_x
             previous_y = guess_y
             blind_guess = False
+            orientation = "horizontal"
+            direction = "right"
+
     else:
-        if orientation is not None:
-            pass
-        if direction is not None:
-            pass
+        if orientation == "horizontal":
+            if direction == "right":
+                if (previous_x + 1) < horizontal_units and ((previous_x + 1), previous_y) not in guess_list:
+                    guess_x = previous_x + 1
+                    guess_y = previous_y
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            previous_x = guess_x
+                            previous_y = guess_y
+                    else:
+                        direction = "left"
+                elif (first_x - 1) >= 0 and ((first_x - 1), first_y) not in guess_list:
+                    guess_x = first_x - 1
+                    guess_y = first_y
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            direction = "left"
+                            previous_x = guess_x
+                            previous_y = guess_y
+                    else:
+                        direction = "up"
+                        orientation = "vertical"
+                elif (first_y + 1) >= 0 and (first_x, (first_y + 1)) not in guess_list:
+                    guess_x = first_x
+                    guess_y = first_y + 1
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            direction = "up"
+                            orientation = "vertical"
+                            previous_x = guess_x
+                            previous_y = guess_y
+                    else:
+                        direction = "down"
+                        orientation = "vertical"
+                elif (first_y - 1) >= 0 and (first_x, (first_y - 1)) not in guess_list:
+                    guess_x = first_x
+                    guess_y = first_y - 1
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            direction = "down"
+                            orientation = "vertical"
+                            previous_x = guess_x
+                            previous_y = guess_y
+                    else:
+                        blind_guess = True
+                else:
+                    blind_guess = True
+            elif direction == "left":
+                if (previous_x - 1) < horizontal_units and ((previous_x - 1), previous_y) not in guess_list:
+                    guess_x = previous_x - 1
+                    guess_y = previous_y
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            previous_x = guess_x
+                            previous_y = guess_y
+                elif (first_x + 1) < horizontal_units and ((first_x + 1), first_y) not in guess_list:
+                    guess_x = first_x + 1
+                    guess_y = first_y
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            direction = "right"
+                            previous_x = guess_x
+                            previous_y = guess_y
+                    else:
+                        direction = "up"
+                        orientation = "vertical"
+                elif (first_y + 1) >= 0 and (first_x, (first_y + 1)) not in guess_list:
+                    guess_x = first_x
+                    guess_y = first_y + 1
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            direction = "up"
+                            orientation = "vertical"
+                            previous_x = guess_x
+                            previous_y = guess_y
+                    else:
+                        direction = "down"
+                        orientation = "vertical"
+                elif (first_y - 1) >= 0 and (first_x, (first_y - 1)) not in guess_list:
+                    guess_x = first_x
+                    guess_y = first_y - 1
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            direction = "down"
+                            orientation = "vertical"
+                            previous_x = guess_x
+                            previous_y = guess_y
+                    else:
+                        blind_guess = True
+                else:
+                    blind_guess = True
+            else:
+                blind_guess = True
+        elif orientation == "vertical":
+            if direction == "up":
+                if (previous_y + 1) < vertical_units and (previous_x, (previous_y + 1)) not in guess_list:
+                    guess_x = previous_x
+                    guess_y = previous_y + 1
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            previous_x = guess_x
+                            previous_y = guess_y
+                    else:
+                        direction = "down"
+                        orientation = "vertical"
+                elif (first_y - 1) > 0 and (first_x, (first_y - 1)) not in guess_list:
+                    guess_x = first_x
+                    guess_y = first_y - 1
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            direction = "down"
+                            orientation = "vertical"
+                    else:
+                        blind_guess = True
+                else:
+                    blind_guess = True
+            elif direction == "down":
+                if (previous_y - 1) > 0 and (previous_x, (previous_y - 1)) not in guess_list:
+                    guess_x = previous_x
+                    guess_y = previous_y - 1
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            previous_x = guess_x
+                            previous_y = guess_y
+                    else:
+                        direction = "up"
+                        orientation = "vertical"
+                elif (first_y + 1) < vertical_units and (first_x, (first_y + 1)) not in guess_list:
+                    guess_x = first_x
+                    guess_y = first_y + 1
+                    guess_list.append((guess_x, guess_y))
+                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                    if success:
+                        if player_grid[guess_x][guess_y].status == "destroyed":
+                            blind_guess = True
+                        else:
+                            direction = "up"
+                            orientation = "vertical"
+                    else:
+                        blind_guess = True
+                else:
+                    blind_guess = True
+
+    draw_playing_window(player_grid, enemy_grid)
+
+    return player_grid, enemy_grid, blind_guess, first_x, first_y, previous_x, previous_y, orientation, direction, guess_list
 
 
 # Handle all actions for a player turn
@@ -507,11 +687,7 @@ def player_turn(player_grid, enemy_grid):
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    guessed, enemy_grid = check_enemy_hit(event.pos, enemy_grid)
-
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if guessed:
-                    guessing = False
+                    guessing, enemy_grid = check_enemy_hit(event.pos, enemy_grid)
 
     draw_playing_window(player_grid, enemy_grid)
 
@@ -535,6 +711,15 @@ def main():
     running = True
     clock = pygame.time.Clock()
 
+    blind_guess = True
+    first_x = 0
+    first_y = 0
+    previous_x = 0
+    previous_y = 0
+    orientation = None
+    direction = None
+    guess_list = []
+
     while running:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -544,12 +729,12 @@ def main():
             player_grid, enemy_grid = pre_game()
             prepping = False
 
-        end_game = False
-        while not end_game:
+        end_game = "ongoing"
+        while end_game == "ongoing":
             player_grid, enemy_grid = player_turn(player_grid, enemy_grid)
             end_game = check_end_game(player_grid, enemy_grid)
-            if not end_game:
-                player_grid, enemy_grid = enemy_turn(player_grid, enemy_grid)
+            if end_game == "ongoing":
+                player_grid, enemy_grid, blind_guess, first_x, first_y, previous_x, previous_y, orientation, direction, guess_list = enemy_turn(player_grid, enemy_grid, blind_guess, first_x, first_y, previous_x, previous_y, orientation, direction, guess_list)
                 end_game = check_end_game(player_grid, enemy_grid)
 
         if end_game == "victory":
