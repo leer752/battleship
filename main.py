@@ -1076,8 +1076,8 @@ def defeat_menu(player_grid):
     text = title_font.render("YOU LOST!", 1, white)
     screen.blit(text, (660, 110))
 
-    play_again_button = pygame.Rect(300, 60, 600, 170)
-    quit_button = pygame.Rect(300, 60, 600, 250)
+    play_again_button = pygame.Rect(600, 170, 300, 60)
+    quit_button = pygame.Rect(600, 250, 300, 60)
 
     pygame.draw.rect(screen, white, play_again_button)
     pygame.draw.rect(screen, white, quit_button)
