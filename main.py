@@ -234,13 +234,9 @@ def get_enemy_positions(enemy_grid):
             if enemy_rotation == "horizontal":
                 enemy_grid[enemy_x + n][enemy_y].number = str(m)
                 enemy_grid[enemy_x + n][enemy_y].status = "full"
-                # Testing purposes only
-                enemy_grid[enemy_x + n][enemy_y].color = green
             else:
                 enemy_grid[enemy_x][enemy_y + n].number = str(m)
                 enemy_grid[enemy_x][enemy_y + n].status = "full"
-                # Testing purposes only
-                enemy_grid[enemy_x][enemy_y + n].color = green
 
     return enemy_grid
 
@@ -1041,24 +1037,20 @@ def victory_menu(enemy_grid):
     text = title_font.render("YOU WON!", 1, white)
     screen.blit(text, (210, 110))
 
-    button_rectangle = pygame.Surface((300, 60))
-    button_rectangle.fill(white)
-    screen.blit(button_rectangle, (150, 170))
-    button_rectangle = pygame.Surface((300, 60))
-    button_rectangle.fill(white)
-    screen.blit(button_rectangle, (150, 250))
+    play_again_button = pygame.Rect(150, 170, 300, 60)
+    quit_button = pygame.Rect(150, 250, 300, 60)
+
+    pygame.draw.rect(screen, white, play_again_button)
+    pygame.draw.rect(screen, white, quit_button)
 
     text = game_font.render("play again", 1, blue)
     screen.blit(text, (250, 190))
     text = game_font.render("quit", 1, blue)
     screen.blit(text, (280, 270))
 
-    play_again_button = pygame.rect.Rect(150, 170, 300, 60)
-    quit_button = pygame.rect.Rect(150, 250, 300, 60)
-
     pygame.display.flip()
 
-    selection = None
+    pygame.event.pump()
     selecting = True
 
     while selecting:
@@ -1069,15 +1061,9 @@ def victory_menu(enemy_grid):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if play_again_button.collidepoint(event.pos):
-                        selection = "play again"
+                        return "play again"
                     elif quit_button.collidepoint(event.pos):
-                        selection = "quit"
-
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if selection is not None:
-                    selecting = False
-
-    return selection
+                        return "quit"
 
 
 # Defeat sub-menu
@@ -1090,24 +1076,20 @@ def defeat_menu(player_grid):
     text = title_font.render("YOU LOST!", 1, white)
     screen.blit(text, (660, 110))
 
-    button_rectangle = pygame.Surface((300, 60))
-    button_rectangle.fill(white)
-    screen.blit(button_rectangle, (600, 170))
-    button_rectangle = pygame.Surface((300, 60))
-    button_rectangle.fill(white)
-    screen.blit(button_rectangle, (600, 250))
+    play_again_button = pygame.Rect(300, 60, 600, 170)
+    quit_button = pygame.Rect(300, 60, 600, 250)
+
+    pygame.draw.rect(screen, white, play_again_button)
+    pygame.draw.rect(screen, white, quit_button)
 
     text = game_font.render("play again", 1, blue)
     screen.blit(text, (700, 190))
     text = game_font.render("quit", 1, blue)
     screen.blit(text, (730, 270))
 
-    play_again_button = pygame.rect.Rect(600, 170, 300, 60)
-    quit_button = pygame.rect.Rect(600, 250, 300, 60)
-
     pygame.display.flip()
 
-    selection = None
+    pygame.event.pump()
     selecting = True
 
     while selecting:
@@ -1118,15 +1100,9 @@ def defeat_menu(player_grid):
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
                     if play_again_button.collidepoint(event.pos):
-                        selection = "play again"
+                        return "play again"
                     elif quit_button.collidepoint(event.pos):
-                        selection = "quit"
-
-            elif event.type == pygame.MOUSEBUTTONUP:
-                if selection is not None:
-                    selecting = False
-
-    return selection
+                        return "quit"
 
 
 # Main function
@@ -1175,6 +1151,8 @@ def main():
     pygame.display.flip()
     clock.tick(fps)
 
+    pygame.quit()
+
 
 # Main menu before game starts that prompts player to either begin or quit; calls the Main function
 def main_menu():
@@ -1183,20 +1161,16 @@ def main_menu():
     text = title_font.render("BATTLESHIP", 1, white)
     screen.blit(text, (393, 200))
 
-    button_rectangle = pygame.Surface((300, 60))
-    button_rectangle.fill(white)
-    screen.blit(button_rectangle, (350, 270))
-    button_rectangle = pygame.Surface((300, 60))
-    button_rectangle.fill(white)
-    screen.blit(button_rectangle, (350, 350))
+    start_button = pygame.Rect(350, 270, 300, 60)
+    quit_button = pygame.Rect(350, 350, 300, 60)
+
+    pygame.draw.rect(screen, white, start_button)
+    pygame.draw.rect(screen, white, quit_button)
 
     text = game_font.render("start game", 1, blue)
     screen.blit(text, (440, 290))
     text = game_font.render("quit", 1, blue)
     screen.blit(text, (485, 370))
-
-    start_button = pygame.rect.Rect(350, 270, 300, 60)
-    quit_button = pygame.rect.Rect(350, 350, 300, 60)
 
     pygame.display.flip()
 
