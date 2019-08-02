@@ -88,6 +88,3 @@ def valid_guess(x, y, guess_list, space):
 
     else:
         return False
-
-
-

@@ -71,7 +71,7 @@ def check_space(player_grid, x, y, guess_list, space):
     return success, player_grid, guess_x, guess_y
 
 
-def blind_guess(guess_list):
+def blind_guess(guesses):
     import random
     random.seed()
 
@@ -80,11 +80,11 @@ def blind_guess(guess_list):
     while already_guessed:
         guess_x = random.randrange(g_var.horizontal_units)
         guess_y = random.randrange(g_var.vertical_units)
-        if (guess_x, guess_y) not in guess_list:
+        if (guess_x, guess_y) not in guesses:
             already_guessed = False
-    guess_list.append((guess_x, guess_y))
+    guesses.append((guess_x, guess_y))
 
-    return guess_list, guess_x, guess_y
+    return guesses, guess_x, guess_y
 
 
 def find_hits(player_grid):
@@ -93,25 +93,25 @@ def find_hits(player_grid):
     for row in range(10):
         for column in range(10):
             if player_grid[row][column].status == "hit" and hit_found == 0:
-                previous_x = row
-                previous_y = column
-                first_x = row
-                first_y = column
+                prev_x = row
+                prev_y = column
+                init_x = row
+                init_y = column
                 hit_found = 1
-                is_blind = False
+                blind = False
     if hit_found != 1:
-        is_blind = True
-        previous_x = 0
-        previous_y = 0
-        first_x = 0
-        first_y = 0
+        blind = True
+        prev_x = 0
+        prev_y = 0
+        init_x = 0
+        init_y = 0
 
-    return is_blind, previous_x, previous_y, first_x, first_y
+    return blind, prev_x, prev_y, init_x, init_y
 
 
 # Generate random guess for enemy on player grid
 # Check if unit hit but not destroyed; if so, change enemy guess to check around hit piece
-def enemy_turn(player_grid, enemy_grid, is_blind, first_x, first_y, previous_x, previous_y, rotation, direction, guess_list):
+def enemy_turn(player_grid, enemy_grid, is_blind, init_x, init_y, prev_x, prev_y, align, way, guesses):
     import time
     import random
     from during_game import valid
@@ -121,343 +121,345 @@ def enemy_turn(player_grid, enemy_grid, is_blind, first_x, first_y, previous_x, 
     pygame.event.pump()
 
     if is_blind:
-        guess_list, guess_x, guess_y = blind_guess(guess_list)
-        success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+        guesses, x, y = blind_guess(guesses)
+        success, player_grid = check_player_hit(player_grid, x, y)
         if success:
-            first_x = guess_x
-            first_y = guess_y
-            previous_x = guess_x
-            previous_y = guess_y
+            init_x = x
+            init_y = y
+            prev_x = x
+            prev_y = y
             is_blind = False
-            rotation = random.choice(("horizontal", "vertical"))
-            if rotation == "horizontal":
-                direction = random.choice(("right", "left"))
+            align = random.choice(("horizontal", "vertical"))
+            if align == "horizontal":
+                way = random.choice(("right", "left"))
             else:
-                direction = random.choice(("up", "down"))
+                way = random.choice(("up", "down"))
 
     else:
-        if rotation == "horizontal":
-            if direction == "right":
-                is_valid = valid.valid_guess(previous_x, previous_y, guess_list, "right")
+        if align == "horizontal":
+            if way == "right":
+                is_valid = valid.valid_guess(prev_x, prev_y, guesses, "right")
                 if is_valid:
-                    success, player_grid, guess_x, guess_y = check_space(player_grid, previous_x, previous_y, guess_list, "right")
+                    success, player_grid, x, y = check_space(player_grid, prev_x, prev_y, guesses, "right")
                     if success:
-                        if player_grid[guess_x][guess_y].status == "destroyed":
-                            is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                        if player_grid[x][y].status == "destroyed":
+                            is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                         else:
-                            previous_x = guess_x
-                            previous_y = guess_y
+                            prev_x = x
+                            prev_y = y
                     else:
-                        previous_x = first_x
-                        previous_y = first_y
-                        direction = "left"
+                        prev_x = init_x
+                        prev_y = init_y
+                        way = "left"
                 else:
-                    is_valid = valid.valid_guess(first_x, first_y, guess_list, "left")
+                    is_valid = valid.valid_guess(init_x, init_y, guesses, "left")
                     if is_valid:
-                        success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y, guess_list, "left")
+                        success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "left")
                         if success:
-                            if player_grid[guess_x][guess_y].status == "destroyed":
-                                is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                            if player_grid[x][y].status == "destroyed":
+                                is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                             else:
-                                previous_x = guess_x
-                                previous_y = guess_y
-                                direction = "left"
+                                prev_x = x
+                                prev_y = y
+                                way = "left"
                         else:
-                            previous_x = first_x
-                            previous_y = first_y
-                            rotation = "vertical"
-                            direction = random.choice(("up", "down"))
+                            prev_x = init_x
+                            prev_y = init_y
+                            align = "vertical"
+                            way = random.choice(("up", "down"))
                     else:
-                        is_valid = valid.valid_guess(first_x, first_y, guess_list, "up")
+                        is_valid = valid.valid_guess(init_x, init_y, guesses, "up")
                         if is_valid:
-                            success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y, guess_list, "up")
+                            success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "up")
                             if success:
-                                if player_grid[guess_x][guess_y].status == "destroyed":
-                                    is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                if player_grid[x][y].status == "destroyed":
+                                    is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                 else:
-                                    previous_x = guess_x
-                                    previous_y = guess_y
-                                    rotation = "vertical"
-                                    direction = "up"
+                                    prev_x = x
+                                    prev_y = y
+                                    align = "vertical"
+                                    way = "up"
                             else:
-                                previous_x = first_x
-                                previous_y = first_y
-                                rotation = "vertical"
-                                direction = "down"
+                                prev_x = init_x
+                                prev_y = init_y
+                                align = "vertical"
+                                way = "down"
                         else:
-                            is_valid = valid.valid_guess(first_x, first_y, guess_list, "down")
+                            is_valid = valid.valid_guess(init_x, init_y, guesses, "down")
                             if is_valid:
-                                success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y, guess_list, "down")
+                                success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "down")
                                 if success:
-                                    if player_grid[guess_x][guess_y].status == "destroyed":
-                                        is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                    if player_grid[x][y].status == "destroyed":
+                                        is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                     else:
-                                        previous_x = guess_x
-                                        previous_y = guess_y
-                                        rotation = "vertical"
-                                        direction = "down"
+                                        prev_x = x
+                                        prev_y = y
+                                        align = "vertical"
+                                        way = "down"
                                 else:
-                                    is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                    is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                             else:
-                                is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                 if is_blind:
-                                    guess_list, guess_x, guess_y = blind_guess(guess_list)
-                                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                                    guesses, x, y = blind_guess(guesses)
+                                    success, player_grid = check_player_hit(player_grid, x, y)
                                     if success:
-                                        first_x = guess_x
-                                        first_y = guess_y
-                                        previous_x = guess_x
-                                        previous_y = guess_y
+                                        init_x = x
+                                        init_y = y
+                                        prev_x = x
+                                        prev_y = y
                                         is_blind = False
-                                        rotation = random.choice(("horizontal", "vertical"))
-                                        if rotation == "horizontal":
-                                            direction = random.choice(("right", "left"))
+                                        align = random.choice(("horizontal", "vertical"))
+                                        if align == "horizontal":
+                                            way = random.choice(("right", "left"))
                                         else:
-                                            direction = random.choice(("up", "down"))
+                                            way = random.choice(("up", "down"))
                                 else:
-                                    enemy_turn(player_grid, enemy_grid, is_blind, first_x, first_y, previous_x, previous_y, rotation, direction, guess_list)
-            elif direction == "left":
-                is_valid = valid.valid_guess(previous_x, previous_y, guess_list, "left")
+                                    enemy_turn(player_grid, enemy_grid, is_blind, init_x, init_y, prev_x, prev_y, align,
+                                               way, guesses)
+            elif way == "left":
+                is_valid = valid.valid_guess(prev_x, prev_y, guesses, "left")
                 if is_valid:
-                    success, player_grid, guess_x, guess_y = check_space(player_grid, previous_x, previous_y, guess_list, "left")
+                    success, player_grid, x, y = check_space(player_grid, prev_x, prev_y, guesses, "left")
                     if success:
-                        if player_grid[guess_x][guess_y].status == "destroyed":
-                            is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                        if player_grid[x][y].status == "destroyed":
+                            is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                         else:
-                            previous_x = guess_x
-                            previous_y = guess_y
+                            prev_x = x
+                            prev_y = y
                     else:
-                        previous_x = first_x
-                        previous_y = first_y
-                        direction = "right"
+                        prev_x = init_x
+                        prev_y = init_y
+                        way = "right"
                 else:
-                    is_valid = valid.valid_guess(first_x, first_y, guess_list, "right")
+                    is_valid = valid.valid_guess(init_x, init_y, guesses, "right")
                     if is_valid:
-                        success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y, guess_list, "right")
+                        success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "right")
                         if success:
-                            if player_grid[guess_x][guess_y].status == "destroyed":
-                                is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                            if player_grid[x][y].status == "destroyed":
+                                is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                             else:
-                                previous_x = guess_x
-                                previous_y = guess_y
-                                direction = "right"
+                                prev_x = x
+                                prev_y = y
+                                way = "right"
                         else:
-                            previous_x = first_x
-                            previous_y = first_y
-                            rotation = "vertical"
-                            direction = random.choice(("up", "down"))
+                            prev_x = init_x
+                            prev_y = init_y
+                            align = "vertical"
+                            way = random.choice(("up", "down"))
                     else:
-                        is_valid = valid.valid_guess(first_x, first_y, guess_list, "up")
+                        is_valid = valid.valid_guess(init_x, init_y, guesses, "up")
                         if is_valid:
-                            success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y,
-                                                                                 guess_list, "up")
+                            success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "up")
                             if success:
-                                if player_grid[guess_x][guess_y].status == "destroyed":
-                                    is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                if player_grid[x][y].status == "destroyed":
+                                    is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                 else:
-                                    previous_x = guess_x
-                                    previous_y = guess_y
-                                    rotation = "vertical"
-                                    direction = "up"
+                                    prev_x = x
+                                    prev_y = y
+                                    align = "vertical"
+                                    way = "up"
                             else:
-                                previous_x = first_x
-                                previous_y = first_y
-                                rotation = "vertical"
-                                direction = "down"
+                                prev_x = init_x
+                                prev_y = init_y
+                                align = "vertical"
+                                way = "down"
                         else:
-                            is_valid = valid.valid_guess(first_x, first_y, guess_list, "down")
+                            is_valid = valid.valid_guess(init_x, init_y, guesses, "down")
                             if is_valid:
-                                success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y,
-                                                                                     guess_list, "down")
+                                success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "down")
                                 if success:
-                                    if player_grid[guess_x][guess_y].status == "destroyed":
-                                        is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                    if player_grid[x][y].status == "destroyed":
+                                        is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                     else:
-                                        previous_x = guess_x
-                                        previous_y = guess_y
-                                        rotation = "vertical"
-                                        direction = "down"
+                                        prev_x = x
+                                        prev_y = y
+                                        align = "vertical"
+                                        way = "down"
                                 else:
-                                    is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                    is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                             else:
-                                is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                 if is_blind:
-                                    guess_list, guess_x, guess_y = blind_guess(guess_list)
-                                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                                    guesses, x, y = blind_guess(guesses)
+                                    success, player_grid = check_player_hit(player_grid, x, y)
                                     if success:
-                                        first_x = guess_x
-                                        first_y = guess_y
-                                        previous_x = guess_x
-                                        previous_y = guess_y
+                                        init_x = x
+                                        init_y = y
+                                        prev_x = x
+                                        prev_y = y
                                         is_blind = False
-                                        rotation = random.choice(("horizontal", "vertical"))
-                                        if rotation == "horizontal":
-                                            direction = random.choice(("right", "left"))
+                                        align = random.choice(("horizontal", "vertical"))
+                                        if align == "horizontal":
+                                            way = random.choice(("right", "left"))
                                         else:
-                                            direction = random.choice(("up", "down"))
+                                            way = random.choice(("up", "down"))
                                 else:
-                                    enemy_turn(player_grid, enemy_grid, is_blind, first_x, first_y, previous_x, previous_y, rotation, direction, guess_list)
-        elif rotation == "vertical":
-            if direction == "up":
-                is_valid = valid.valid_guess(previous_x, previous_y, guess_list, "up")
+                                    enemy_turn(player_grid, enemy_grid, is_blind, init_x, init_y, prev_x, prev_y, align,
+                                               way, guesses)
+        elif align == "vertical":
+            if way == "up":
+                is_valid = valid.valid_guess(prev_x, prev_y, guesses, "up")
                 if is_valid:
-                    success, player_grid, guess_x, guess_y = check_space(player_grid, previous_x, previous_y, guess_list, "up")
+                    success, player_grid, x, y = check_space(player_grid, prev_x, prev_y, guesses, "up")
                     if success:
-                        if player_grid[guess_x][guess_y].status == "destroyed":
-                            is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                        if player_grid[x][y].status == "destroyed":
+                            is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                         else:
-                            previous_x = guess_x
-                            previous_y = guess_y
+                            prev_x = x
+                            prev_y = y
                     else:
-                        previous_x = first_x
-                        previous_y = first_y
-                        direction = "down"
+                        prev_x = init_x
+                        prev_y = init_y
+                        way = "down"
                 else:
-                    is_valid = valid.valid_guess(first_x, first_y, guess_list, "down")
+                    is_valid = valid.valid_guess(init_x, init_y, guesses, "down")
                     if is_valid:
-                        success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y, guess_list, "down")
+                        success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "down")
                         if success:
-                            if player_grid[guess_x][guess_y].status == "destroyed":
-                                is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                            if player_grid[x][y].status == "destroyed":
+                                is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                             else:
-                                previous_x = guess_x
-                                previous_y = guess_y
-                                direction = "down"
+                                prev_x = x
+                                prev_y = y
+                                way = "down"
                         else:
-                            previous_x = first_x
-                            previous_y = first_y
-                            rotation = "horizontal"
-                            direction = random.choice(("right", "left"))
+                            prev_x = init_x
+                            prev_y = init_y
+                            align = "horizontal"
+                            way = random.choice(("right", "left"))
                     else:
-                        is_valid = valid.valid_guess(first_x, first_y, guess_list, "right")
+                        is_valid = valid.valid_guess(init_x, init_y, guesses, "right")
                         if is_valid:
-                            success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y, guess_list, "right")
+                            success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "right")
                             if success:
-                                if player_grid[guess_x][guess_y].status == "destroyed":
-                                    is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                if player_grid[x][y].status == "destroyed":
+                                    is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                 else:
-                                    previous_x = guess_x
-                                    previous_y = guess_y
-                                    rotation = "horizontal"
-                                    direction = "right"
+                                    prev_x = x
+                                    prev_y = y
+                                    align = "horizontal"
+                                    way = "right"
                             else:
-                                previous_x = first_x
-                                previous_y = first_y
-                                rotation = "horizontal"
-                                direction = "left"
+                                prev_x = init_x
+                                prev_y = init_y
+                                align = "horizontal"
+                                way = "left"
                         else:
-                            is_valid = valid.valid_guess(first_x, first_y, guess_list, "left")
+                            is_valid = valid.valid_guess(init_x, init_y, guesses, "left")
                             if is_valid:
-                                success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y, guess_list, "left")
+                                success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "left")
                                 if success:
-                                    if player_grid[guess_x][guess_y].status == "destroyed":
-                                        is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                    if player_grid[x][y].status == "destroyed":
+                                        is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                     else:
-                                        previous_x = guess_x
-                                        previous_y = guess_y
-                                        rotation = "horizontal"
-                                        direction = "left"
+                                        prev_x = x
+                                        prev_y = y
+                                        align = "horizontal"
+                                        way = "left"
                                 else:
-                                    is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                    is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                             else:
-                                is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                 if is_blind:
-                                    guess_list, guess_x, guess_y = blind_guess(guess_list)
-                                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                                    guesses, x, y = blind_guess(guesses)
+                                    success, player_grid = check_player_hit(player_grid, x, y)
                                     if success:
-                                        first_x = guess_x
-                                        first_y = guess_y
-                                        previous_x = guess_x
-                                        previous_y = guess_y
+                                        init_x = x
+                                        init_y = y
+                                        prev_x = x
+                                        prev_y = y
                                         is_blind = False
-                                        rotation = random.choice(("horizontal", "vertical"))
-                                        if rotation == "horizontal":
-                                            direction = random.choice(("right", "left"))
+                                        align = random.choice(("horizontal", "vertical"))
+                                        if align == "horizontal":
+                                            way = random.choice(("right", "left"))
                                         else:
-                                            direction = random.choice(("up", "down"))
+                                            way = random.choice(("up", "down"))
                                 else:
-                                    enemy_turn(player_grid, enemy_grid, is_blind, first_x, first_y, previous_x, previous_y, rotation, direction, guess_list)
-            elif direction == "down":
-                is_valid = valid.valid_guess(previous_x, previous_y, guess_list, "down")
+                                    enemy_turn(player_grid, enemy_grid, is_blind, init_x, init_y, prev_x, prev_y, align,
+                                               way, guesses)
+            elif way == "down":
+                is_valid = valid.valid_guess(prev_x, prev_y, guesses, "down")
                 if is_valid:
-                    success, player_grid, guess_x, guess_y = check_space(player_grid, previous_x, previous_y, guess_list, "down")
+                    success, player_grid, x, y = check_space(player_grid, prev_x, prev_y, guesses, "down")
                     if success:
-                        if player_grid[guess_x][guess_y].status == "destroyed":
-                            is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                        if player_grid[x][y].status == "destroyed":
+                            is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                         else:
-                            previous_x = guess_x
-                            previous_y = guess_y
+                            prev_x = x
+                            prev_y = y
                     else:
-                        previous_x = first_x
-                        previous_y = first_y
-                        direction = "up"
+                        prev_x = init_x
+                        prev_y = init_y
+                        way = "up"
                 else:
-                    is_valid = valid.valid_guess(first_x, first_y, guess_list, "up")
+                    is_valid = valid.valid_guess(init_x, init_y, guesses, "up")
                     if is_valid:
-                        success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y, guess_list, "up")
+                        success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "up")
                         if success:
-                            if player_grid[guess_x][guess_y].status == "destroyed":
-                                is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                            if player_grid[x][y].status == "destroyed":
+                                is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                             else:
-                                previous_x = guess_x
-                                previous_y = guess_y
-                                direction = "up"
+                                prev_x = x
+                                prev_y = y
+                                way = "up"
                         else:
-                            previous_x = first_x
-                            previous_y = first_y
-                            rotation = "horizontal"
-                            direction = random.choice(("right", "left"))
+                            prev_x = init_x
+                            prev_y = init_y
+                            align = "horizontal"
+                            way = random.choice(("right", "left"))
                     else:
-                        is_valid = valid.valid_guess(first_x, first_y, guess_list, "right")
+                        is_valid = valid.valid_guess(init_x, init_y, guesses, "right")
                         if is_valid:
-                            success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y, guess_list, "right")
+                            success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "right")
                             if success:
-                                if player_grid[guess_x][guess_y].status == "destroyed":
-                                    is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                if player_grid[x][y].status == "destroyed":
+                                    is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                 else:
-                                    previous_x = guess_x
-                                    previous_y = guess_y
-                                    rotation = "horizontal"
-                                    direction = "right"
+                                    prev_x = x
+                                    prev_y = y
+                                    align = "horizontal"
+                                    way = "right"
                             else:
-                                previous_x = first_x
-                                previous_y = first_y
-                                rotation = "horizontal"
-                                direction = "left"
+                                prev_x = init_x
+                                prev_y = init_y
+                                align = "horizontal"
+                                way = "left"
                         else:
-                            is_valid = valid.valid_guess(first_x, first_y, guess_list, "left")
+                            is_valid = valid.valid_guess(init_x, init_y, guesses, "left")
                             if is_valid:
-                                success, player_grid, guess_x, guess_y = check_space(player_grid, first_x, first_y, guess_list, "left")
+                                success, player_grid, x, y = check_space(player_grid, init_x, init_y, guesses, "left")
                                 if success:
-                                    if player_grid[guess_x][guess_y].status == "destroyed":
-                                        is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                    if player_grid[x][y].status == "destroyed":
+                                        is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                     else:
-                                        previous_x = guess_x
-                                        previous_y = guess_y
-                                        rotation = "horizontal"
-                                        direction = "left"
+                                        prev_x = x
+                                        prev_y = y
+                                        align = "horizontal"
+                                        way = "left"
                                 else:
-                                    is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                    is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                             else:
-                                is_blind, previous_x, previous_y, first_x, first_y = find_hits(player_grid)
+                                is_blind, prev_x, prev_y, init_x, init_y = find_hits(player_grid)
                                 if is_blind:
-                                    guess_list, guess_x, guess_y = blind_guess(guess_list)
-                                    success, player_grid = check_player_hit(player_grid, guess_x, guess_y)
+                                    guesses, x, y = blind_guess(guesses)
+                                    success, player_grid = check_player_hit(player_grid, x, y)
                                     if success:
-                                        first_x = guess_x
-                                        first_y = guess_y
-                                        previous_x = guess_x
-                                        previous_y = guess_y
+                                        init_x = x
+                                        init_y = y
+                                        prev_x = x
+                                        prev_y = y
                                         is_blind = False
-                                        rotation = random.choice(("horizontal", "vertical"))
-                                        if rotation == "horizontal":
-                                            direction = random.choice(("right", "left"))
+                                        align = random.choice(("horizontal", "vertical"))
+                                        if align == "horizontal":
+                                            way = random.choice(("right", "left"))
                                         else:
-                                            direction = random.choice(("up", "down"))
+                                            way = random.choice(("up", "down"))
                                 else:
-                                    enemy_turn(player_grid, enemy_grid, is_blind, first_x, first_y, previous_x, previous_y, rotation, direction, guess_list)
+                                    enemy_turn(player_grid, enemy_grid, is_blind, init_x, init_y, prev_x, prev_y, align,
+                                               way, guesses)
 
     from during_game import during
     during.draw_playing_window(player_grid, enemy_grid)
 
-    return player_grid, enemy_grid, is_blind, first_x, first_y, previous_x, previous_y, rotation, direction, guess_list
+    return player_grid, enemy_grid, is_blind, init_x, init_y, prev_x, prev_y, align, way, guesses
