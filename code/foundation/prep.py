@@ -19,30 +19,38 @@ def draw_ship_inventory(placed_ships, orientation):
     if orientation == "horizontal":
         for m in range(5):
             if m == 0:
-                ship_inventory.append(pygame.rect.Rect(135, 530, (g_var.unit_size * 2) + g_var.unit_margin, g_var.unit_size))
+                ship_inventory.append(pygame.Rect(135, 530, (g_var.unit_size * 2) + g_var.unit_margin, g_var.unit_size))
             if m == 1:
-                ship_inventory.append(pygame.rect.Rect(245, 530, (g_var.unit_size * 3) + (g_var.unit_margin * 2), g_var.unit_size))
+                ship_inventory.append(pygame.Rect(245, 530, (g_var.unit_size * 3) + (g_var.unit_margin * 2),
+                                                  g_var.unit_size))
             if m == 2:
-                ship_inventory.append(pygame.rect.Rect(380, 530, (g_var.unit_size * 3) + (g_var.unit_margin * 2), g_var.unit_size))
+                ship_inventory.append(pygame.Rect(380, 530, (g_var.unit_size * 3) + (g_var.unit_margin * 2),
+                                                  g_var.unit_size))
             if m == 3:
-                ship_inventory.append(pygame.rect.Rect(515, 530, (g_var.unit_size * 4) + (g_var.unit_margin * 3), g_var.unit_size))
+                ship_inventory.append(pygame.Rect(515, 530, (g_var.unit_size * 4) + (g_var.unit_margin * 3),
+                                                  g_var.unit_size))
             if m == 4:
-                ship_inventory.append(pygame.rect.Rect(685, 530, (g_var.unit_size * 5) + (g_var.unit_margin * 4), g_var.unit_size))
+                ship_inventory.append(pygame.Rect(685, 530, (g_var.unit_size * 5) + (g_var.unit_margin * 4),
+                                                  g_var.unit_size))
             if m not in placed_ships:
                 pygame.draw.rect(init_screen.screen, g_var.black, ship_inventory[m])
 
     if orientation == "vertical":
         for m in range(5):
             if m == 0:
-                ship_inventory.append(pygame.rect.Rect(155, 520, g_var.unit_size, (g_var.unit_size * 2) + g_var.unit_margin))
+                ship_inventory.append(pygame.Rect(155, 520, g_var.unit_size, (g_var.unit_size * 2) + g_var.unit_margin))
             if m == 1:
-                ship_inventory.append(pygame.rect.Rect(270, 510, g_var.unit_size, (g_var.unit_size * 3) + (g_var.unit_margin * 2)))
+                ship_inventory.append(pygame.Rect(270, 510, g_var.unit_size, (g_var.unit_size * 3) +
+                                                  (g_var.unit_margin * 2)))
             if m == 2:
-                ship_inventory.append(pygame.rect.Rect(405, 510, g_var.unit_size, (g_var.unit_size * 3) + (g_var.unit_margin * 2)))
+                ship_inventory.append(pygame.Rect(405, 510, g_var.unit_size, (g_var.unit_size * 3) +
+                                                  (g_var.unit_margin * 2)))
             if m == 3:
-                ship_inventory.append(pygame.rect.Rect(545, 490, g_var.unit_size, (g_var.unit_size * 4) + (g_var.unit_margin * 3)))
+                ship_inventory.append(pygame.Rect(545, 490, g_var.unit_size, (g_var.unit_size * 4) +
+                                                  (g_var.unit_margin * 3)))
             if m == 4:
-                ship_inventory.append(pygame.rect.Rect(730, 475, g_var.unit_size, (g_var.unit_size * 5) + (g_var.unit_margin * 4)))
+                ship_inventory.append(pygame.Rect(730, 475, g_var.unit_size, (g_var.unit_size * 5) +
+                                                  (g_var.unit_margin * 4)))
             if m not in placed_ships:
                 pygame.draw.rect(init_screen.screen, g_var.black, ship_inventory[m])
 
@@ -51,16 +59,16 @@ def draw_ship_inventory(placed_ships, orientation):
 
 def pre_game():
     prepping = True
-    placed_ships = []
+    placed = []
     selected_ship = None
-    orientation = "horizontal"
+    align = "horizontal"
     mouse_up = False
 
     from foundation import create_arrays
     player_grid = create_arrays.create_player_array()
     enemy_grid = create_arrays.create_enemy_array()
 
-    ship_inventory, player_grid, enemy_grid = draw_starting_window(placed_ships, player_grid, enemy_grid, orientation)
+    ship_inventory, player_grid, enemy_grid = draw_starting_window(placed, player_grid, enemy_grid, align)
 
     from during_game import valid
     while prepping:
@@ -76,7 +84,7 @@ def pre_game():
                             mouse_x, mouse_y = event.pos
                             offset_x = selected_ship.x - mouse_x
                             offset_y = selected_ship.y - mouse_y
-                            placed_ships.append(m)
+                            placed.append(m)
                             ship_number = m
                 mouse_up = False
 
@@ -84,13 +92,15 @@ def pre_game():
                 if event.button == 1:
                     if selected_ship is not None:
                         checking_ship = selected_ship
-                        valid_space, player_grid = valid.valid_player_space(checking_ship, ship_number, placed_ships, player_grid, enemy_grid, orientation)
+                        valid_space, player_grid = valid.valid_player_space(checking_ship, ship_number, placed,
+                                                                            player_grid, enemy_grid, align)
                         if not valid_space:
-                            placed_ships.remove(ship_number)
-                            ship_inventory, player_grid, enemy_grid = draw_starting_window(placed_ships, player_grid, enemy_grid, orientation)
+                            placed.remove(ship_number)
+                            ship_inventory, player_grid, enemy_grid = draw_starting_window(placed, player_grid,
+                                                                                           enemy_grid, align)
                         else:
                             pygame.display.flip()
-                            if len(placed_ships) == 5:
+                            if len(placed) == 5:
                                 prepping = False
                         selected_ship = None
                 mouse_up = True
@@ -100,21 +110,23 @@ def pre_game():
                     mouse_x, mouse_y = event.pos
                     selected_ship.x = mouse_x + offset_x
                     selected_ship.y = mouse_y + offset_y
-                    draw_starting_window(placed_ships, player_grid, enemy_grid, orientation)
+                    draw_starting_window(placed, player_grid, enemy_grid, align)
                     pygame.draw.rect(init_screen.screen, g_var.black, selected_ship)
                     pygame.display.update()
 
             elif event.type == pygame.KEYDOWN and event.key == pygame.K_r:
                 if mouse_up:
-                    if orientation == "horizontal":
-                        orientation = "vertical"
-                        ship_inventory, player_grid, enemy_grid = draw_starting_window(placed_ships, player_grid, enemy_grid, orientation)
+                    if align == "horizontal":
+                        align = "vertical"
+                        ship_inventory, player_grid, enemy_grid = draw_starting_window(placed, player_grid, enemy_grid,
+                                                                                       align)
                     else:
-                        orientation = "horizontal"
-                        ship_inventory, player_grid, enemy_grid = draw_starting_window(placed_ships, player_grid, enemy_grid, orientation)
+                        align = "horizontal"
+                        ship_inventory, player_grid, enemy_grid = draw_starting_window(placed, player_grid, enemy_grid,
+                                                                                       align)
 
     enemy_grid = get_enemy_positions(enemy_grid)
-    draw_starting_window(placed_ships, player_grid, enemy_grid, orientation)
+    draw_starting_window(placed, player_grid, enemy_grid, align)
 
     return player_grid, enemy_grid
 
