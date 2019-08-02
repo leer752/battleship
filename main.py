@@ -123,7 +123,6 @@ def valid_player_space(checking_ship, ship_number, placed_ships, player_grid, en
                 player_grid[row][column].color = green
                 player_grid[row][column].number = str(ship_number)
                 player_grid[row][column].status = "full"
-
                 draw_starting_window(placed_ships, player_grid, enemy_grid, orientation)
 
     return True, player_grid
@@ -232,21 +231,131 @@ def get_enemy_positions(enemy_grid):
             if enemy_rotation == "horizontal":
                 enemy_grid[enemy_x + n][enemy_y].number = str(m)
                 enemy_grid[enemy_x + n][enemy_y].status = "full"
+                # Testing purposes only
+                enemy_grid[enemy_x + n][enemy_y].color = green
             else:
                 enemy_grid[enemy_x][enemy_y + n].number = str(m)
                 enemy_grid[enemy_x][enemy_y + n].status = "full"
+                # Testing purposes only
+                enemy_grid[enemy_x][enemy_y + n].color = green
 
     return enemy_grid
 
 
 # Update scores on screen for enemy based on units hit, missed, & destroyed
 def draw_enemy_score(enemy_grid):
-    pass
+    enemy_hit = 0
+    enemy_missed = 0
+    enemy_destroyed = 0
+    initial_ships = []
+    final_ships = []
 
+    for row in range(10):
+        for column in range(10):
+            if enemy_grid[row][column].status == "hit":
+                enemy_hit += 1
+            elif enemy_grid[row][column].status == "miss":
+                enemy_missed += 1
+            elif enemy_grid[row][column].status == "destroyed":
+                enemy_hit += 1
+                enemy_destroyed += 1
+                if enemy_grid[row][column].number == "0":
+                    units = 2
+                elif enemy_grid[row][column].number == "1" or enemy_grid[row][column].number == "2":
+                    units = 3
+                elif enemy_grid[row][column].number == "3":
+                    units = 4
+                else:
+                    units = 5
+                initial_ships.append(units)
 
+    if enemy_destroyed != 0:
+        for num in initial_ships:
+            if num not in final_ships:
+                final_ships.append(num)
+        divider_ships = sum(final_ships)
+        enemy_destroyed = int(enemy_destroyed / divider_ships)
+
+    enemy_left = 5 - enemy_destroyed
+
+    score_rectangle = pygame.Surface((70, 180))
+    score_rectangle.fill(white)
+    screen.blit(score_rectangle, (845, 450))
+
+    text = game_font.render("{}".format(enemy_hit), 1, blue)
+    screen.blit(text, (875, 470))
+    text = game_font.render("{}".format(enemy_missed), 1, blue)
+    screen.blit(text, (875, 510))
+    text = game_font.render("{}".format(enemy_destroyed), 1, blue)
+    screen.blit(text, (875, 550))
+    text = game_font.render("{}".format(enemy_left), 1, blue)
+    screen.blit(text, (875, 590))
+
+    text = game_font.render("HITS", 1, white)
+    screen.blit(text, (785, 470))
+    text = game_font.render("MISSES", 1, white)
+    screen.blit(text, (758, 510))
+    text = game_font.render("DESTROYED", 1, white)
+    screen.blit(text, (720, 550))
+    text = game_font.render("LEFT", 1, white)
+    screen.blit(text, (780, 590))
+
+    
 # Update scores on screen for player based on units hit, missed, & destroyed
 def draw_player_score(player_grid):
-    pass
+    player_hit = 0
+    player_missed = 0
+    player_destroyed = 0
+    initial_ships = []
+    final_ships = []
+
+    for row in range(10):
+        for column in range(10):
+            if player_grid[row][column].status == "hit":
+                player_hit += 1
+            elif player_grid[row][column].status == "miss":
+                player_missed += 1
+            elif player_grid[row][column].status == "destroyed":
+                player_hit += 1
+                player_destroyed += 1
+                if player_grid[row][column].number == "0":
+                    units = 2
+                elif player_grid[row][column].number == "1" or player_grid[row][column].number == "2":
+                    units = 3
+                elif player_grid[row][column].number == "3":
+                    units = 4
+                else:
+                    units = 5
+                initial_ships.append(units)
+
+    if player_destroyed != 0:
+        for num in initial_ships:
+            if num not in final_ships:
+                final_ships.append(num)
+        divider_ships = sum(final_ships)
+        player_destroyed = int(player_destroyed / divider_ships)
+
+    score_rectangle = pygame.Surface((70, 180))
+    score_rectangle.fill(white)
+    screen.blit(score_rectangle, (80, 450))
+
+    text = game_font.render("{}".format(player_hit), 1, blue)
+    screen.blit(text, (110, 470))
+    text = game_font.render("{}".format(player_missed), 1, blue)
+    screen.blit(text, (110, 510))
+    text = game_font.render("{}".format(player_destroyed), 1, blue)
+    screen.blit(text, (110, 550))
+    text = game_font.render("{}".format(player_left), 1, blue)
+    screen.blit(text, (110, 590))
+
+    text = game_font.render("HITS", 1, white)
+    screen.blit(text, (170, 470))
+    text = game_font.render("MISSES", 1, white)
+    screen.blit(text, (170, 510))
+    text = game_font.render("DESTROYED", 1, white)
+    screen.blit(text, (170, 550))
+    text = game_font.render("LEFT", 1, white)
+    screen.blit(text, (170, 590))
 
 
 # Check if enemy hit a player unit & change the player tile
@@ -1067,7 +1176,6 @@ def main():
             victory_menu()
         elif end_game == "defeat":
             defeat_menu()
-
 
     pygame.display.flip()
     clock.tick(fps)
