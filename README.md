@@ -1,7 +1,7 @@
 # battleship
 Repository for "Battleship" project
 
-Coded by Lee Rhodes with help from the wise mentor Joanna Jackson <br>
+Coded by Lee R. with help from the wise mentor Joanna J. <br>
 Originated within UT Libraries & will likely stay there
 
 Totally (not) original concept taken from the board game Battleship licensed by Hasbro <br>

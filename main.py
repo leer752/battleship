@@ -39,13 +39,11 @@ pygame.display.set_caption("Battleship")
 # __init__ function defines whether the space belongs to an enemy or player, which ship the unit belongs to,
 # the color of the square, the x & y positions of the square, and the rectangle dimensions for the square
 class Board(object):
-    def __init__(self, alignment, color, status, number, x, y, rectangle):
+    def __init__(self, alignment, color, status, number, rectangle):
         self.alignment = alignment
         self.number = number
         self.status = status
         self.color = color
-        self.x = x
-        self.y = y
         self.rectangle = rectangle
 
 
@@ -56,7 +54,7 @@ def create_player_array():
         player_grid.append([])
         for column in range(10):
             player_grid[row].append(0)
-            player_grid[row][column] = Board("player", white, "empty", "empty", row, column, pygame.rect.Rect((unit_margin + unit_size) * column + 80, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
+            player_grid[row][column] = Board("player", white, "empty", "empty", pygame.rect.Rect((unit_margin + unit_size) * column + 80, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
     return player_grid
 
 
@@ -67,7 +65,7 @@ def create_enemy_array():
         enemy_grid.append([])
         for column in range(10):
             enemy_grid[row].append(0)
-            enemy_grid[row][column] = Board("enemy", white, "empty", "empty", row, column, pygame.rect.Rect((unit_margin + unit_size) * column + 600, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
+            enemy_grid[row][column] = Board("enemy", white, "empty", "empty", pygame.rect.Rect((unit_margin + unit_size) * column + 600, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
     return enemy_grid
 
 
