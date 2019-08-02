@@ -1,4 +1,5 @@
 import pygame
+import time
 import random
 
 pygame.init()
@@ -36,15 +37,13 @@ pygame.display.set_caption("Battleship")
 # __init__ function defines whether the space belongs to an enemy or player, which ship the unit belongs to,
 # the color of the square, the x & y positions of the square, and the rectangle dimensions for the square
 class Board(object):
-    def __init__(self, alignment, color, status, number, x, y, rectangle):
+    def __init__(self, alignment, color, status, number, rectangle):
         self.alignment = alignment
         self.number = number
         self.status = status
         self.color = color
-        self.x = x
-        self.y = y
         self.rectangle = rectangle
-
+        
 
 # Assign positions to a list array that is 10x10 units
 def create_player_array():
@@ -53,7 +52,7 @@ def create_player_array():
         player_grid.append([])
         for column in range(10):
             player_grid[row].append(0)
-            player_grid[row][column] = Board("player", white, "empty", "empty", row, column, pygame.rect.Rect((unit_margin + unit_size) * column + 80, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
+            player_grid[row][column] = Board("player", white, "empty", "empty", pygame.rect.Rect((unit_margin + unit_size) * column + 80, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
     return player_grid
 
 
@@ -64,7 +63,7 @@ def create_enemy_array():
         enemy_grid.append([])
         for column in range(10):
             enemy_grid[row].append(0)
-            enemy_grid[row][column] = Board("enemy", white, "empty", "empty", row, column, pygame.rect.Rect((unit_margin + unit_size) * column + 600, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
+            enemy_grid[row][column] = Board("enemy", white, "empty", "empty", pygame.rect.Rect((unit_margin + unit_size) * column + 600, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
     return enemy_grid
 
 
@@ -227,13 +226,9 @@ def get_enemy_positions(enemy_grid):
             if enemy_rotation == "horizontal":
                 enemy_grid[enemy_x + n][enemy_y].number = str(m)
                 enemy_grid[enemy_x + n][enemy_y].status = "full"
-                # Testing purposes only
-                enemy_grid[enemy_x + n][enemy_y].color = green
             else:
                 enemy_grid[enemy_x][enemy_y + n].number = str(m)
                 enemy_grid[enemy_x][enemy_y + n].status = "full"
-                # Testing purposes only
-                enemy_grid[enemy_x][enemy_y + n].color = green
 
     return enemy_grid
 
@@ -303,7 +298,7 @@ def check_enemy_hit(event_pos, enemy_grid):
 
     return True, enemy_grid
 
-
+  
 # Display separate small screen that holds player ships; player will drag & drop ships from this screen
 def draw_ship_inventory(placed_ships, orientation):
     inventory_rectangle = pygame.Surface((832, 200))
@@ -454,7 +449,7 @@ def victory_menu():
 def defeat_menu():
     pass
 
-
+  
 # Main function
 def main():
 
@@ -483,6 +478,8 @@ def main():
             victory_menu()
         elif end_game == "defeat":
             defeat_menu()
+
+
 
     pygame.display.flip()
     clock.tick(fps)
