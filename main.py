@@ -181,19 +181,6 @@ def draw_playing_window(player_grid, enemy_grid):
 
     pygame.display.flip()
 
-
-# Draw the victory screen
-# Shows enemy grid & score with victory menu
-def draw_victory_window():
-    pass
-
-
-# Draw the defeat screen
-# Shows player grid & score with defeat menu
-def draw_defeat_window():
-    pass
-
-
 # Generate positions for enemy ships & place them on enemy grid
 def get_enemy_positions(enemy_grid):
     random.seed()
