@@ -1,0 +1,10 @@
+# foundation
+#   create_arrays
+#       create_player_array
+#       create_enemy_array
+#   init_screen
+#   prep
+#       draw_ship_inventory
+#       pre_game
+#       get_enemy_positions
+#       draw_starting_window
