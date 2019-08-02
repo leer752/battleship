@@ -1,4 +1,5 @@
 import pygame
+import time
 import random
 import time
 
@@ -18,10 +19,8 @@ vertical_units = 10
 unit_margin = 7
 unit_size = 25
 
-font_size = 30
-game_font = pygame.font.Font("game_font.otf", font_size)
-title_font_size = 60
-title_font = pygame.font.Font("game_font.otf", title_font_size)
+fontsize = 30
+game_font = pygame.font.Font("C:\\Users\\bnr752\\PycharmProjects\\battleship\\assets\\molor.otf", fontsize)
 
 red = (255, 51, 51)
 blue = (153, 204, 255)
@@ -45,7 +44,7 @@ class Board(object):
         self.status = status
         self.color = color
         self.rectangle = rectangle
-
+        
 
 # Assign positions to a list array that is 10x10 units
 def create_player_array():
@@ -232,9 +231,13 @@ def get_enemy_positions(enemy_grid):
             if enemy_rotation == "horizontal":
                 enemy_grid[enemy_x + n][enemy_y].number = str(m)
                 enemy_grid[enemy_x + n][enemy_y].status = "full"
+                # Testing purposes only
+                enemy_grid[enemy_x + n][enemy_y].color = green
             else:
                 enemy_grid[enemy_x][enemy_y + n].number = str(m)
                 enemy_grid[enemy_x][enemy_y + n].status = "full"
+                # Testing purposes only
+                enemy_grid[enemy_x][enemy_y + n].color = green
 
     return enemy_grid
 
@@ -255,13 +258,23 @@ def draw_enemy_score(enemy_grid):
                 enemy_missed += 1
             elif enemy_grid[row][column].status == "destroyed":
                 enemy_hit += 1
-                initial_ships.append((enemy_grid[row][column].alignment + "_" + enemy_grid[row][column].number))
+                enemy_destroyed += 1
+                if enemy_grid[row][column].number == "0":
+                    units = 2
+                elif enemy_grid[row][column].number == "1" or enemy_grid[row][column].number == "2":
+                    units = 3
+                elif enemy_grid[row][column].number == "3":
+                    units = 4
+                else:
+                    units = 5
+                initial_ships.append(units)
 
-    if len(initial_ships) > 0:
-        for ship in initial_ships:
-            if ship not in final_ships:
-                final_ships.append(ship)
-        enemy_destroyed = int(len(final_ships))
+    if enemy_destroyed != 0:
+        for num in initial_ships:
+            if num not in final_ships:
+                final_ships.append(num)
+        divider_ships = sum(final_ships)
+        enemy_destroyed = int(enemy_destroyed / divider_ships)
 
     enemy_left = 5 - enemy_destroyed
 
@@ -287,7 +300,7 @@ def draw_enemy_score(enemy_grid):
     text = game_font.render("LEFT", 1, white)
     screen.blit(text, (780, 590))
 
-
+    
 # Update scores on screen for player based on units hit, missed, & destroyed
 def draw_player_score(player_grid):
     player_hit = 0
@@ -304,15 +317,23 @@ def draw_player_score(player_grid):
                 player_missed += 1
             elif player_grid[row][column].status == "destroyed":
                 player_hit += 1
-                initial_ships.append((player_grid[row][column].alignment + "_" + player_grid[row][column].number))
+                player_destroyed += 1
+                if player_grid[row][column].number == "0":
+                    units = 2
+                elif player_grid[row][column].number == "1" or player_grid[row][column].number == "2":
+                    units = 3
+                elif player_grid[row][column].number == "3":
+                    units = 4
+                else:
+                    units = 5
+                initial_ships.append(units)
 
-    if len(initial_ships) > 0:
-        for ship in initial_ships:
-            if ship not in final_ships:
-                final_ships.append(ship)
-        player_destroyed = int(len(final_ships))
-
-    player_left = 5 - player_destroyed
+    if player_destroyed != 0:
+        for num in initial_ships:
+            if num not in final_ships:
+                final_ships.append(num)
+        divider_ships = sum(final_ships)
+        player_destroyed = int(player_destroyed / divider_ships)
 
     score_rectangle = pygame.Surface((70, 180))
     score_rectangle.fill(white)
@@ -588,6 +609,57 @@ def valid_guess(x, y, guess_list, space):
 
     else:
         return False
+
+      
+# Check if player hit an enemy unit & uncover that enemy tile
+def check_enemy_hit(event_pos, enemy_grid):
+    valid_space = False
+
+    for row in range(10):
+        for column in range(10):
+            if enemy_grid[row][column].rectangle.collidepoint(event_pos):
+                valid_space = True
+                selected_unit = enemy_grid[row][column]
+
+    if not valid_space:
+        return False, enemy_grid
+
+    if selected_unit.status == "hit" or selected_unit.status == "miss" or selected_unit.status == "destroyed":
+        return False, enemy_grid
+
+    if selected_unit.status == "empty":
+        selected_unit.status = "miss"
+        selected_unit.color = blue
+
+    elif selected_unit.status == "full":
+        counting_units = 1
+        selected_identity = selected_unit.alignment + "_" + selected_unit.number
+        if selected_unit.number == "0":
+            units = 2
+        elif selected_unit.number == "1" or selected_unit.number == "2":
+            units = 3
+        elif selected_unit.number == "3":
+            units = 4
+        else:
+            units = 5
+        for row in range(10):
+            for column in range(10):
+                ship_identity = enemy_grid[row][column].alignment + "_" + enemy_grid[row][column].number
+                if ship_identity == selected_identity:
+                    if enemy_grid[row][column].status == "hit":
+                        counting_units += 1
+        if units == counting_units:
+            for row in range(10):
+                for column in range(10):
+                    ship_identity = enemy_grid[row][column].alignment + "_" + enemy_grid[row][column].number
+                    if ship_identity == selected_identity:
+                        enemy_grid[row][column].status = "destroyed"
+                        enemy_grid[row][column].color = red
+        else:
+            selected_unit.status = "hit"
+            selected_unit.color = orange
+
+    return True, enemy_grid
 
 
 # Check right/left/up/down of designated unit on player grid
@@ -1026,83 +1098,47 @@ def player_turn(player_grid, enemy_grid):
 
 
 # Victory sub-menu
-def victory_menu(enemy_grid):
-    screen.fill(blue)
-
-    draw_enemy_grid(enemy_grid)
-    draw_enemy_score(enemy_grid)
-
-    text = title_font.render("YOU WON!", 1, white)
-    screen.blit(text, (210, 110))
-
-    play_again_button = pygame.Rect(150, 170, 300, 60)
-    quit_button = pygame.Rect(150, 250, 300, 60)
-
-    pygame.draw.rect(screen, white, play_again_button)
-    pygame.draw.rect(screen, white, quit_button)
-
-    text = game_font.render("play again", 1, blue)
-    screen.blit(text, (250, 190))
-    text = game_font.render("quit", 1, blue)
-    screen.blit(text, (280, 270))
-
-    pygame.display.flip()
-
-    pygame.event.pump()
-    selecting = True
-
-    while selecting:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    if play_again_button.collidepoint(event.pos):
-                        return "play again"
-                    elif quit_button.collidepoint(event.pos):
-                        return "quit"
+def victory_menu():
+    pass
 
 
 # Defeat sub-menu
-def defeat_menu(player_grid):
-    screen.fill(blue)
+def defeat_menu():
+    pass
 
-    draw_player_grid(player_grid)
-    draw_player_score(player_grid)
 
-    text = title_font.render("YOU LOST!", 1, white)
-    screen.blit(text, (660, 110))
+# Handle all actions for a player turn
+def player_turn(player_grid, enemy_grid):
+    guessing = True
 
-    play_again_button = pygame.Rect(600, 170, 300, 60)
-    quit_button = pygame.Rect(600, 250, 300, 60)
+    draw_playing_window(player_grid, enemy_grid)
 
-    pygame.draw.rect(screen, white, play_again_button)
-    pygame.draw.rect(screen, white, quit_button)
-
-    text = game_font.render("play again", 1, blue)
-    screen.blit(text, (700, 190))
-    text = game_font.render("quit", 1, blue)
-    screen.blit(text, (730, 270))
-
-    pygame.display.flip()
-
-    pygame.event.pump()
-    selecting = True
-
-    while selecting:
+    while guessing:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
 
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    if play_again_button.collidepoint(event.pos):
-                        return "play again"
-                    elif quit_button.collidepoint(event.pos):
-                        return "quit"
+                    guessed, enemy_grid = check_enemy_hit(event.pos, enemy_grid)
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if guessed:
+                    guessing = False
+
+    draw_playing_window(player_grid, enemy_grid)
 
 
+# Victory sub-menu
+def victory_menu():
+    pass
+
+
+# Defeat sub-menu
+def defeat_menu():
+    pass
+
+  
 # Main function
 def main():
 
@@ -1137,56 +1173,19 @@ def main():
                 end_game = check_end_game(player_grid, enemy_grid)
 
         if end_game == "victory":
-            selection = victory_menu(enemy_grid)
+            victory_menu()
         elif end_game == "defeat":
-            selection = defeat_menu(player_grid)
-
-        if selection == "quit":
-            running = False
-        elif selection == "play again":
-            main()
+            defeat_menu()
 
     pygame.display.flip()
     clock.tick(fps)
 
-    pygame.quit()
-
 
 # Main menu before game starts that prompts player to either begin or quit; calls the Main function
 def main_menu():
-    screen.fill(blue)
-
-    text = title_font.render("BATTLESHIP", 1, white)
-    screen.blit(text, (393, 200))
-
-    start_button = pygame.Rect(350, 270, 300, 60)
-    quit_button = pygame.Rect(350, 350, 300, 60)
-
-    pygame.draw.rect(screen, white, start_button)
-    pygame.draw.rect(screen, white, quit_button)
-
-    text = game_font.render("start game", 1, blue)
-    screen.blit(text, (440, 290))
-    text = game_font.render("quit", 1, blue)
-    screen.blit(text, (485, 370))
-
-    pygame.display.flip()
-
-    selecting = True
-
-    while selecting:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-
-            elif event.type == pygame.MOUSEBUTTONDOWN:
-                if event.button == 1:
-                    if start_button.collidepoint(event.pos):
-                        main()
-                    elif quit_button.collidepoint(event.pos):
-                        pygame.quit()
+    pass
 
 
-main_menu()
+main()
 
 pygame.quit()
