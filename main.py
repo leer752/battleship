@@ -1,4 +1,5 @@
 import pygame
+import time
 import random
 import time
 
@@ -37,15 +38,13 @@ pygame.display.set_caption("Battleship")
 # __init__ function defines whether the space belongs to an enemy or player, which ship the unit belongs to,
 # the color of the square, the x & y positions of the square, and the rectangle dimensions for the square
 class Board(object):
-    def __init__(self, alignment, color, status, number, x, y, rectangle):
+    def __init__(self, alignment, color, status, number, rectangle):
         self.alignment = alignment
         self.number = number
         self.status = status
         self.color = color
-        self.x = x
-        self.y = y
         self.rectangle = rectangle
-
+        
 
 # Assign positions to a list array that is 10x10 units
 def create_player_array():
@@ -54,7 +53,7 @@ def create_player_array():
         player_grid.append([])
         for column in range(10):
             player_grid[row].append(0)
-            player_grid[row][column] = Board("player", white, "empty", "empty", row, column, pygame.rect.Rect((unit_margin + unit_size) * column + 80, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
+            player_grid[row][column] = Board("player", white, "empty", "empty", pygame.rect.Rect((unit_margin + unit_size) * column + 80, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
     return player_grid
 
 
@@ -65,7 +64,7 @@ def create_enemy_array():
         enemy_grid.append([])
         for column in range(10):
             enemy_grid[row].append(0)
-            enemy_grid[row][column] = Board("enemy", white, "empty", "empty", row, column, pygame.rect.Rect((unit_margin + unit_size) * column + 600, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
+            enemy_grid[row][column] = Board("enemy", white, "empty", "empty", pygame.rect.Rect((unit_margin + unit_size) * column + 600, (unit_margin + unit_size) * row + 60, unit_size, unit_size))
     return enemy_grid
 
 
@@ -124,6 +123,7 @@ def valid_player_space(checking_ship, ship_number, placed_ships, player_grid, en
                 player_grid[row][column].color = green
                 player_grid[row][column].number = str(ship_number)
                 player_grid[row][column].status = "full"
+
                 draw_starting_window(placed_ships, player_grid, enemy_grid, orientation)
 
     return True, player_grid
@@ -232,13 +232,9 @@ def get_enemy_positions(enemy_grid):
             if enemy_rotation == "horizontal":
                 enemy_grid[enemy_x + n][enemy_y].number = str(m)
                 enemy_grid[enemy_x + n][enemy_y].status = "full"
-                # Testing purposes only
-                enemy_grid[enemy_x + n][enemy_y].color = green
             else:
                 enemy_grid[enemy_x][enemy_y + n].number = str(m)
                 enemy_grid[enemy_x][enemy_y + n].status = "full"
-                # Testing purposes only
-                enemy_grid[enemy_x][enemy_y + n].color = green
 
     return enemy_grid
 
@@ -504,6 +500,57 @@ def valid_guess(x, y, guess_list, space):
 
     else:
         return False
+
+      
+# Check if player hit an enemy unit & uncover that enemy tile
+def check_enemy_hit(event_pos, enemy_grid):
+    valid_space = False
+
+    for row in range(10):
+        for column in range(10):
+            if enemy_grid[row][column].rectangle.collidepoint(event_pos):
+                valid_space = True
+                selected_unit = enemy_grid[row][column]
+
+    if not valid_space:
+        return False, enemy_grid
+
+    if selected_unit.status == "hit" or selected_unit.status == "miss" or selected_unit.status == "destroyed":
+        return False, enemy_grid
+
+    if selected_unit.status == "empty":
+        selected_unit.status = "miss"
+        selected_unit.color = blue
+
+    elif selected_unit.status == "full":
+        counting_units = 1
+        selected_identity = selected_unit.alignment + "_" + selected_unit.number
+        if selected_unit.number == "0":
+            units = 2
+        elif selected_unit.number == "1" or selected_unit.number == "2":
+            units = 3
+        elif selected_unit.number == "3":
+            units = 4
+        else:
+            units = 5
+        for row in range(10):
+            for column in range(10):
+                ship_identity = enemy_grid[row][column].alignment + "_" + enemy_grid[row][column].number
+                if ship_identity == selected_identity:
+                    if enemy_grid[row][column].status == "hit":
+                        counting_units += 1
+        if units == counting_units:
+            for row in range(10):
+                for column in range(10):
+                    ship_identity = enemy_grid[row][column].alignment + "_" + enemy_grid[row][column].number
+                    if ship_identity == selected_identity:
+                        enemy_grid[row][column].status = "destroyed"
+                        enemy_grid[row][column].color = red
+        else:
+            selected_unit.status = "hit"
+            selected_unit.color = orange
+
+    return True, enemy_grid
 
 
 # Check right/left/up/down of designated unit on player grid
@@ -951,6 +998,38 @@ def defeat_menu():
     pass
 
 
+# Handle all actions for a player turn
+def player_turn(player_grid, enemy_grid):
+    guessing = True
+
+    draw_playing_window(player_grid, enemy_grid)
+
+    while guessing:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    guessed, enemy_grid = check_enemy_hit(event.pos, enemy_grid)
+
+            elif event.type == pygame.MOUSEBUTTONUP:
+                if guessed:
+                    guessing = False
+
+    draw_playing_window(player_grid, enemy_grid)
+
+
+# Victory sub-menu
+def victory_menu():
+    pass
+
+
+# Defeat sub-menu
+def defeat_menu():
+    pass
+
+  
 # Main function
 def main():
 
@@ -988,6 +1067,7 @@ def main():
             victory_menu()
         elif end_game == "defeat":
             defeat_menu()
+
 
     pygame.display.flip()
     clock.tick(fps)
